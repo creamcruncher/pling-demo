@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)app.html?demo=1 -->
+<!-- saved from url=(0045)https://warren-duan.github.io/app.html?demo=1 -->
 <html lang="en" style="--accent: #e1457e; --accent-2: #a96cf0; --grad-start: #ff8a5c; --grad-end: #9a5cf0; --accent-rgb: 225, 69, 126; --shadow: rgba(225, 69, 126, 0.14); --avail-1: #ff8a5c; --avail-2: #9a5cf0; --busy-1: #3d2b8f; --busy-2: #5b4acd; --avail-shadow: rgba(225, 69, 126, 0.4); --busy-shadow: rgba(61, 43, 143, 0.42);"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -12,18 +12,12 @@
       (function () {
         var topLevel = window.self === window.top;
         var mobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-        if (topLevel && !mobile) {
-          document.documentElement.classList.add('pling-zoom');
-          var fz=function(){var z=Math.min(1.1,(window.innerHeight-24)/844,(window.innerWidth-24)/390);document.documentElement.style.setProperty('--pz',z);};
-          fz(); window.addEventListener('resize',fz); window.addEventListener('orientationchange',fz);
-        }
+        if (topLevel && !mobile) document.documentElement.classList.add('pling-zoom');
       })();
     </script>
     <style>
         /* 10% bigger everything (desktop standalone only — see head script) */
-        html.pling-zoom .phone { zoom: var(--pz, 1.1); }
-        html.pling-zoom, html.pling-zoom body { overflow: hidden; }
-        html.pling-zoom body { padding: 12px 0; }
+        html.pling-zoom .phone { zoom: 1.1; }
 
         /* Home-only: hero status card + slide control */
         .hero {
@@ -951,7 +945,7 @@
                 </div><div class="friend anim" data-dist="2.1" data-free="9999" data-rec="6" style="animation-delay: 0.36s; display: none;" onclick="openProfile(&#39;Sarah Bennett&#39;)">
                     <div class="f-dot offline"></div>
                     <div class="f-info"><div class="f-name">Sarah Bennett</div><div class="f-loc">Offline · <span class="dist">2.1 mi</span></div></div>
-                </div><a class="see-all" id="seeAllFriends" href="friends.html">See all friends →</a></div>
+                </div><a class="see-all" id="seeAllFriends" href="https://warren-duan.github.io/friends.html">See all friends →</a></div>
 
             <div class="bottom-pad" style="height:150px"></div>
         </div>
@@ -959,7 +953,7 @@
         <!-- floating action button -->
         <button class="start-hangout show" onclick="openStart()">+ Start a hangout</button>
 
-        <div class="nav" id="nav"><a class="nav-item active" href="app.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z"></path></svg><span>Home</span><div class="nav-dot"></div></a><a class="nav-item" href="groups.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2.2"></rect><rect x="13" y="3" width="8" height="8" rx="2.2"></rect><rect x="3" y="13" width="8" height="8" rx="2.2"></rect><rect x="13" y="13" width="8" height="8" rx="2.2"></rect></svg><span>Circles</span><div class="nav-dot"></div></a><a class="nav-item" href="plans.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"></rect><path d="M3 9h18"></path><path d="M8 2.5v4M16 2.5v4"></path></svg><span>Plans</span><div class="nav-dot"></div></a><a class="nav-item" href="discover.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z"></path></svg><span>Discover</span><div class="nav-dot"></div></a></div>
+        <div class="nav" id="nav"><a class="nav-item active" href="https://warren-duan.github.io/app.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z"></path></svg><span>Home</span><div class="nav-dot"></div></a><a class="nav-item" href="https://warren-duan.github.io/groups.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="2.2"></rect><rect x="13" y="3" width="8" height="8" rx="2.2"></rect><rect x="3" y="13" width="8" height="8" rx="2.2"></rect><rect x="13" y="13" width="8" height="8" rx="2.2"></rect></svg><span>Circles</span><div class="nav-dot"></div></a><a class="nav-item" href="https://warren-duan.github.io/plans.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"></rect><path d="M3 9h18"></path><path d="M8 2.5v4M16 2.5v4"></path></svg><span>Plans</span><div class="nav-dot"></div></a><a class="nav-item" href="https://warren-duan.github.io/discover.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M15.5 8.5l-2 5-5 2 2-5 5-2z"></path></svg><span>Discover</span><div class="nav-dot"></div></a></div>
 
         <!-- Start-a-hangout chooser (bottom sheet) -->
         <div class="start-backdrop" id="startBackdrop" onclick="closeStart()"></div>
@@ -1066,7 +1060,7 @@
                 <div class="ev-iconlg" id="evIcon">🎮</div>
                 <div class="ev-title" id="evTitle">Event</div>
                 <div class="ev-when" id="evWhen">When</div>
-                <a class="ev-loc" id="evLoc" href="app.html?demo=1#" target="_blank" rel="noopener">
+                <a class="ev-loc" id="evLoc" href="https://warren-duan.github.io/app.html?demo=1#" target="_blank" rel="noopener">
                     <span>📍</span><u id="evLocText">Place</u>
                 </a>
                 <div id="evMyRsvp"></div>
