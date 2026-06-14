@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)https://warren-duan.github.io/demo.html?v=8 -->
+<html lang="en" class="demo-embedded"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pling — Demo</title>
+    <link rel="stylesheet" href="./styles(1).css">
+    <style>
+        /* ============================================================
+           DEMO-ONLY styles. All demo classes namespaced .demo-*.
+           The real prototype is embedded VERBATIM via <iframe src=index.html>
+           so home/profile/friends look EXACTLY like the prototype.
+           ============================================================ */
+
+        html, body {
+            background: linear-gradient(160deg, #fff0e8 0%, #fdeaf2 50%, #f0e9ff 100%);
+            min-height: 100vh;
+        }
+        /* embedded in the landing iframe → go transparent so the page's fixed
+           gradient shows through the stage around the phone (seamless, no seam
+           from a second gradient anchored to the iframe box) */
+        html.demo-embedded, html.demo-embedded body {
+            background: transparent !important;
+        }
+        body {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .demo-stage {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* phones absolute-positioned: single centered phone by default,
+           clean sweep to left when 2nd phone enters from the right */
+        .demo-phones {
+            position: absolute;
+            inset: 0;
+        }
+        .demo-phone-wrap {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transition: transform 0.75s cubic-bezier(0.32, 0.72, 0, 1),
+                        opacity 0.55s ease;
+            will-change: transform, opacity;
+        }
+        /* default state: Alex centered, Emily off-screen right */
+        #alexWrap  { transform: translate(-50%, -50%) scale(0.92); }
+        #emilyWrap { transform: translate(-50%, -50%) translateX(380px) scale(0.92); opacity: 0; pointer-events: none; }
+        /* split: Alex slides left + slight shrink, Emily slides in + shows */
+        .demo-phones.split #alexWrap  { transform: translate(-50%, -50%) translateX(-220px) scale(0.78); }
+        .demo-phones.split #emilyWrap { transform: translate(-50%, -50%) translateX(220px) scale(0.78); opacity: 1; pointer-events: auto; }
+        /* merge: both phones glide back to dead-center and overlap perfectly → one
+           phone (identical size + position, so their shadows coincide). Alex rides
+           on top so his "Emily said yes" linking-up card is the one that shows. */
+        .demo-phones.merged #alexWrap,
+        .demo-phones.merged #emilyWrap {
+            transform: translate(-50%, -50%) scale(0.92);
+            opacity: 1;
+            pointer-events: none;
+        }
+        .demo-phones.merged #alexWrap { z-index: 5; }
+
+        /* iframe = the embedded real prototype screen */
+        .demo-frame {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            background: var(--app-bg);
+            pointer-events: none;
+            border-radius: 46px;
+        }
+
+        /* overlay screens cover the iframe when active */
+        .demo-screen {
+            position: absolute;
+            inset: 0;
+            border-radius: 46px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.32s ease;
+            z-index: 2;
+        }
+        .demo-screen.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* stage-level overlay (end card spans the whole stage) */
+        .demo-stage-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+        }
+        .demo-stage-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ----- Cold open + End card ----- */
+        .demo-card-screen {
+            background: linear-gradient(160deg, #ff8a5c 0%, #9a5cf0 60%, #a96cf0 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 0 36px;
+        }
+        .demo-card-screen .demo-logo {
+            font-size: 64px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            color: #fff;
+            text-shadow: 0 8px 30px rgba(0,0,0,0.18);
+        }
+        .demo-card-screen .demo-logo .bang { color: #ffe1f0; }
+        .demo-card-screen.small-logo .demo-logo { font-size: 44px; }
+        .demo-card-screen .demo-tag {
+            margin-top: 14px;
+            font-size: 17px;
+            font-weight: 500;
+            opacity: 0.92;
+            letter-spacing: -0.1px;
+        }
+        .demo-card-screen .demo-link {
+            margin-top: 12px;
+            font-size: 13px;
+            opacity: 0.78;
+            font-weight: 500;
+        }
+
+        /* ----- Linked-up payoff (uses prototype tokens) ----- */
+        .demo-linkup-screen {
+            background: var(--app-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 28px;
+        }
+        .demo-linkup-card {
+            width: 100%;
+            background: #fff;
+            border-radius: 28px;
+            padding: 30px 26px;
+            box-shadow: 0 20px 50px rgba(224, 90, 132,0.18);
+            text-align: center;
+        }
+        .demo-linkup-check {
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(140deg, #20C997, #1aa67f);
+            margin: 0 auto 16px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff;
+            box-shadow: 0 14px 28px rgba(32, 201, 151,0.4);
+            animation: linkupPop 0.5s cubic-bezier(0.34,1.6,0.64,1);
+        }
+        @keyframes linkupPop { from{transform:scale(0);} to{transform:scale(1);} }
+        .demo-linkup-title { font-size: 22px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.4px; }
+        .demo-linkup-sub { font-size: 14px; color: var(--text-gray); margin-top: 6px; font-weight: 500; }
+        .demo-linkup-faces { display: flex; justify-content: center; margin-top: 18px; }
+        .demo-linkup-faces .avatar {
+            width: 50px; height: 50px; font-size: 16px;
+            border: 3px solid #fff; margin-left: -10px;
+        }
+        .demo-linkup-faces .avatar:first-child { margin-left: 0; }
+        .demo-linkup-where {
+            margin-top: 18px; font-size: 14px; font-weight: 600;
+            color: var(--accent);
+            background: rgba(224, 90, 132,0.08);
+            padding: 10px 14px; border-radius: 12px;
+            display: inline-block;
+        }
+
+        /* ----- Emily lock screen (no prototype equivalent — custom) ----- */
+        .demo-lockbg {
+            position: absolute; inset: 0;
+            background: linear-gradient(160deg, #ffb59c 0%, #f3b6d0 100%);
+            display: flex; flex-direction: column; align-items: center;
+            border-radius: 46px;
+            overflow: hidden;
+        }
+        .demo-locktime {
+            color: #fff;
+            font-weight: 200;
+            font-size: 76px;
+            letter-spacing: -2px;
+            margin-top: 80px;
+            text-shadow: 0 4px 18px rgba(0,0,0,0.15);
+        }
+        .demo-lockdate {
+            color: rgba(255,255,255,0.85);
+            font-size: 17px; font-weight: 600;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+        }
+        .demo-lock-statusbar {
+            position: absolute; top: 0; left: 0; right: 0;
+            display: flex; justify-content: space-between;
+            align-items: center;
+            padding: 16px 30px 4px;
+            font-size: 14px; font-weight: 600;
+            color: #fff;
+        }
+        .demo-lock-statusbar .demo-icons { display: flex; gap: 6px; align-items: center; }
+        .demo-notch-fake {
+            position: absolute; top: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 126px; height: 34px;
+            background: #ccc4cc;
+            border-radius: 0 0 20px 20px;
+            z-index: 20;
+        }
+        .demo-notif-banner {
+            position: absolute;
+            top: 64px;
+            left: 14px;
+            right: 14px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border-radius: 22px;
+            padding: 14px;
+            display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 14px 36px rgba(0,0,0,0.18);
+            transform: translateY(-180%);
+            opacity: 0;
+            transition: transform 0.55s cubic-bezier(0.32,0.72,0,1), opacity 0.4s ease;
+            z-index: 21;
+        }
+        .demo-notif-banner.show { transform: translateY(0); opacity: 1; }
+        .demo-notif-icon {
+            width: 42px; height: 42px;
+            border-radius: 11px;
+            background: linear-gradient(140deg, var(--grad-start), var(--grad-end));
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 18px;
+            flex-shrink: 0;
+            letter-spacing: -0.5px;
+        }
+        .demo-notif-body { flex: 1; min-width: 0; }
+        .demo-notif-app {
+            font-size: 11.5px; font-weight: 700;
+            color: var(--text-gray); letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+        .demo-notif-title { font-size: 14.5px; font-weight: 700; color: var(--text-dark); margin-top: 1px; }
+        .demo-notif-sub { font-size: 13px; color: var(--text-dark); opacity: 0.78; margin-top: 2px; line-height: 1.3; }
+        .demo-join-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 13px;
+            padding: 9px 16px;
+            font-size: 13px; font-weight: 700;
+            box-shadow: 0 6px 16px rgba(224, 90, 132,0.4);
+            flex-shrink: 0;
+            font-family: inherit;
+            transition: transform 0.15s, background 0.3s, box-shadow 0.3s;
+        }
+        .demo-join-btn.joined {
+            background: var(--free);
+            box-shadow: 0 6px 16px rgba(32, 201, 151,0.4);
+        }
+
+        /* ----- tap dot ----- */
+        .demo-dot {
+            position: absolute;
+            left: 0; top: 0;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.92);
+            border: 1.5px solid rgba(224, 90, 132,0.55);
+            box-shadow: 0 6px 20px rgba(224, 90, 132,0.35), 0 0 0 6px rgba(224, 90, 132,0.12);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 9999;
+            transition: opacity 0.25s ease;
+        }
+        .demo-dot.visible { opacity: 1; }
+        .demo-dot::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(224, 90, 132,0.7);
+            opacity: 0;
+        }
+        .demo-dot.ripple::after { animation: demoRipple 0.6s ease-out; }
+        @keyframes demoRipple {
+            0%   { transform: scale(0.8); opacity: 0.9; }
+            100% { transform: scale(2.8); opacity: 0; }
+        }
+        .demo-dot.press {
+            transform: translate(-50%, -50%) scale(0.78);
+            transition: transform 0.12s ease;
+        }
+
+        /* ----- captions ----- */
+        .demo-caption-layer {
+            position: absolute;
+            bottom: 60px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            text-align: center;
+            max-width: min(640px, 88vw);
+        }
+        .demo-caption {
+            display: inline-block;
+            font-size: 22px; font-weight: 700;
+            color: #241b26;
+            letter-spacing: -0.3px;
+            line-height: 1.35;
+            background: rgba(255,255,255,0.78);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            padding: 14px 24px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(224, 90, 132,0.18);
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.32,0.72,0,1);
+        }
+        .demo-caption.show { opacity: 1; transform: translateY(0); }
+
+        /* ----- progress + restart ----- */
+        .demo-progress {
+            position: absolute;
+            top: 16px; left: 0; right: 0;
+            margin: 0 auto;
+            width: 220px; height: 3px;
+            background: rgba(224, 90, 132,0.18);
+            border-radius: 2px; overflow: hidden;
+            z-index: 200;
+        }
+        .demo-progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.15s linear; }
+        .demo-controls {
+            position: absolute; top: 14px; right: 18px;
+            z-index: 200; display: flex; gap: 8px; align-items: center;
+        }
+        .demo-controls button {
+            background: rgba(255,255,255,0.85);
+            border: 1px solid rgba(224, 90, 132,0.15);
+            color: var(--accent);
+            border-radius: 14px;
+            padding: 7px 14px;
+            font-size: 13px; font-weight: 700;
+            font-family: inherit; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(224, 90, 132,0.12);
+        }
+        .demo-controls button:active { transform: scale(0.96); }
+        /* when embedded in the landing page, hide debug chrome (Restart + progress) */
+        .demo-embedded .demo-controls,
+        .demo-embedded .demo-progress { display: none !important; }
+        /* back-to-site button — top-left, hidden when embedded in the landing iframe */
+        .demo-back {
+            position: fixed; top: 22px; left: 22px; z-index: 300;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 11px 18px 11px 15px;
+            background: rgba(255,255,255,0.82);
+            -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+            border: 1px solid rgba(224, 90, 132,0.15); border-radius: 999px;
+            color: #e1457e; font-weight: 700; font-size: 14px;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            text-decoration: none;
+            box-shadow: 0 8px 24px rgba(224, 90, 132,0.18);
+            transition: transform 0.18s ease, box-shadow 0.2s ease;
+        }
+        .demo-back:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(224, 90, 132,0.24); }
+        .demo-back:active { transform: translateY(0) scale(0.97); }
+        .demo-embedded .demo-back { display: none; }
+    </style>
+<style>.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: #0000ff;
+  --rdp-background-color: #e7edff;
+  --rdp-accent-color-dark: #3003e1;
+  --rdp-background-color-dark: #180270;
+  --rdp-outline: 2px solid var(--rdp-accent-color); /* Outline border for focused elements */
+  --rdp-outline-selected: 2px solid rgba(0, 0, 0, 0.75); /* Outline border for focused _and_ selected elements */
+
+  margin: 1em;
+}
+
+/* Hide elements for devices that are not screen readers */
+.rdp-vhidden {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute !important;
+  top: 0;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  border: 0 !important;
+}
+
+/* Buttons */
+.rdp-button_reset {
+  appearance: none;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  cursor: default;
+  color: inherit;
+  outline: none;
+  background: none;
+  font: inherit;
+
+  -moz-appearance: none;
+  -webkit-appearance: none;
+}
+
+.rdp-button {
+  border: 2px solid transparent;
+}
+
+.rdp-button[disabled] {
+  opacity: 0.25;
+}
+
+.rdp-button:not([disabled]) {
+  cursor: pointer;
+}
+
+.rdp-button:focus:not([disabled]),
+.rdp-button:active:not([disabled]) {
+  color: inherit;
+  border: var(--rdp-outline);
+  background-color: var(--rdp-background-color);
+}
+
+.rdp-button:hover:not([disabled]) {
+  background-color: var(--rdp-background-color);
+}
+
+.rdp-months {
+  display: flex;
+}
+
+.rdp-month {
+  margin: 0 1em;
+}
+
+.rdp-month:first-child {
+  margin-left: 0;
+}
+
+.rdp-month:last-child {
+  margin-right: 0;
+}
+
+.rdp-table {
+  margin: 0;
+  max-width: calc(var(--rdp-cell-size) * 7);
+  border-collapse: collapse;
+}
+
+.rdp-with_weeknumber .rdp-table {
+  max-width: calc(var(--rdp-cell-size) * 8);
+  border-collapse: collapse;
+}
+
+.rdp-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  text-align: left;
+}
+
+.rdp-multiple_months .rdp-caption {
+  position: relative;
+  display: block;
+  text-align: center;
+}
+
+.rdp-caption_dropdowns {
+  position: relative;
+  display: inline-flex;
+}
+
+.rdp-caption_label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0 0.25em;
+  white-space: nowrap;
+  color: currentColor;
+  border: 0;
+  border: 2px solid transparent;
+  font-family: inherit;
+  font-size: 140%;
+  font-weight: bold;
+}
+
+.rdp-nav {
+  white-space: nowrap;
+}
+
+.rdp-multiple_months .rdp-caption_start .rdp-nav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.rdp-multiple_months .rdp-caption_end .rdp-nav {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.rdp-nav_button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--rdp-cell-size);
+  height: var(--rdp-cell-size);
+  padding: 0.25em;
+  border-radius: 100%;
+}
+
+/* ---------- */
+/* Dropdowns  */
+/* ---------- */
+
+.rdp-dropdown_year,
+.rdp-dropdown_month {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.rdp-dropdown {
+  appearance: none;
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  cursor: inherit;
+  opacity: 0;
+  border: none;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.rdp-dropdown[disabled] {
+  opacity: unset;
+  color: unset;
+}
+
+.rdp-dropdown:focus:not([disabled]) + .rdp-caption_label,
+.rdp-dropdown:active:not([disabled]) + .rdp-caption_label {
+  border: var(--rdp-outline);
+  border-radius: 6px;
+  background-color: var(--rdp-background-color);
+}
+
+.rdp-dropdown_icon {
+  margin: 0 0 0 5px;
+}
+
+.rdp-head {
+  border: 0;
+}
+
+.rdp-head_row,
+.rdp-row {
+  height: 100%;
+}
+
+.rdp-head_cell {
+  vertical-align: middle;
+  text-transform: uppercase;
+  font-size: 0.75em;
+  font-weight: 700;
+  text-align: center;
+  height: 100%;
+  height: var(--rdp-cell-size);
+  padding: 0;
+}
+
+.rdp-tbody {
+  border: 0;
+}
+
+.rdp-tfoot {
+  margin: 0.5em;
+}
+
+.rdp-cell {
+  width: var(--rdp-cell-size);
+  height: 100%;
+  height: var(--rdp-cell-size);
+  padding: 0;
+  text-align: center;
+}
+
+.rdp-weeknumber {
+  font-size: 0.75em;
+}
+
+.rdp-weeknumber,
+.rdp-day {
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--rdp-cell-size);
+  max-width: var(--rdp-cell-size);
+  height: var(--rdp-cell-size);
+  margin: 0;
+  border: 2px solid transparent;
+  border-radius: 100%;
+}
+
+.rdp-day_today:not(.rdp-day_outside) {
+  font-weight: bold;
+}
+
+.rdp-day_selected:not([disabled]),
+.rdp-day_selected:focus:not([disabled]),
+.rdp-day_selected:active:not([disabled]),
+.rdp-day_selected:hover:not([disabled]) {
+  color: white;
+  background-color: var(--rdp-accent-color);
+}
+
+.rdp-day_selected:focus:not([disabled]) {
+  border: var(--rdp-outline-selected);
+}
+
+.rdp:not([dir='rtl']) .rdp-day_range_start:not(.rdp-day_range_end) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.rdp:not([dir='rtl']) .rdp-day_range_end:not(.rdp-day_range_start) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.rdp[dir='rtl'] .rdp-day_range_start:not(.rdp-day_range_end) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.rdp[dir='rtl'] .rdp-day_range_end:not(.rdp-day_range_start) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.rdp-day_range_end.rdp-day_range_start {
+  border-radius: 100%;
+}
+
+.rdp-day_range_middle {
+  border-radius: 0;
+}
+</style></head>
+<body>
+<div class="demo-stage" id="stage">
+
+    <script>
+      /* hide debug chrome when this demo is embedded in an iframe (the landing page) */
+      if (window.self !== window.top) { document.documentElement.classList.add('demo-embedded'); }
+    </script>
+
+    <!-- back to marketing site — only when viewed directly (hidden when embedded) -->
+    <a class="demo-back" href="https://warren-duan.github.io/index.html" aria-label="Back to site">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+      <span>Back to site</span>
+    </a>
+
+    <div class="demo-progress"><div class="demo-progress-bar" id="progressBar" style="transition: none; width: 31.8252%;"></div></div>
+    <div class="demo-controls">
+        <button id="restartBtn" type="button">Restart</button>
+    </div>
+
+    <div class="demo-phones" id="phones">
+
+        <!-- ALEX'S PHONE — real prototype via iframe + overlays -->
+        <div class="demo-phone-wrap" id="alexWrap">
+            <div class="phone">
+                <div class="notch"></div>
+                <div class="screen" id="alexScreen">
+
+                    <!-- prototype embedded VERBATIM -->
+                    <iframe class="demo-frame" id="alexFrame" src="./app(1).html" title="Alex"></iframe>
+
+                    <!-- OVERLAY: cold open -->
+                    <div class="demo-screen demo-card-screen active" id="scrCold">
+                        <div class="demo-logo">Pling<span class="bang">!</span></div>
+                    </div>
+
+                    <!-- OVERLAY: linked-up payoff (Alex side) -->
+                    <div class="demo-screen demo-linkup-screen" id="scrLinkup">
+                        <div class="demo-linkup-card">
+                            <div class="demo-linkup-check">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l5 5L20 7"></path></svg>
+                            </div>
+                            <div class="demo-linkup-title">You're linking up</div>
+                            <div class="demo-linkup-sub">Emily said yes — heading out now</div>
+                            <div class="demo-linkup-faces">
+                                <div class="avatar">A</div>
+                                <div class="avatar" style="background: linear-gradient(140deg,#f5a3b9,#d77295)">EC</div>
+                            </div>
+                            <div class="demo-linkup-where">☕  Thompson Library  ·  3:30 PM</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- EMILY'S PHONE — custom lock screen (no real prototype) -->
+        <div class="demo-phone-wrap" id="emilyWrap">
+            <div class="phone">
+                <div class="notch"></div>
+                <div class="screen" id="emilyScreen">
+                    <div class="demo-lockbg" id="scrLock">
+                        <div class="demo-lock-statusbar">
+                            <span>15:28</span>
+                            <div class="demo-icons">
+                                <svg width="17" height="11" viewBox="0 0 17 11" fill="none"><rect x="0" y="6" width="3" height="5" rx="1" fill="#fff"></rect><rect x="4.5" y="4" width="3" height="7" rx="1" fill="#fff"></rect><rect x="9" y="2" width="3" height="9" rx="1" fill="#fff"></rect><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#fff"></rect></svg>
+                                <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="#fff" opacity="0.6"></rect><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#fff"></rect></svg>
+                            </div>
+                        </div>
+                        <div class="demo-locktime">15:28</div>
+                        <div class="demo-lockdate">Tuesday, October 14</div>
+
+                        <div class="demo-notif-banner" id="notifBanner">
+                            <div class="demo-notif-icon">P<span style="color:#ffe1f0">!</span></div>
+                            <div class="demo-notif-body">
+                                <div class="demo-notif-app">Pling · now</div>
+                                <div class="demo-notif-title">Alex plinged you</div>
+                                <div class="demo-notif-sub">Free for 45 min · Thompson Library</div>
+                            </div>
+                            <button class="demo-join-btn" id="emilyJoinBtn" type="button">Join</button>
+                        </div>
+                    </div>
+
+                    <!-- OVERLAY: linked-up payoff (Emily side) -->
+                    <div class="demo-screen demo-linkup-screen" id="emilyScrLinkup">
+                        <div class="demo-linkup-card">
+                            <div class="demo-linkup-check">
+                                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l5 5L20 7"></path></svg>
+                            </div>
+                            <div class="demo-linkup-title">You're linking up</div>
+                            <div class="demo-linkup-sub">Heading to meet Alex</div>
+                            <div class="demo-linkup-faces">
+                                <div class="avatar" style="background: linear-gradient(140deg,#f5a3b9,#d77295)">EC</div>
+                                <div class="avatar">A</div>
+                            </div>
+                            <div class="demo-linkup-where">☕  Thompson Library  ·  3:30 PM</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- STAGE-LEVEL end card overlay: covers both phones at the very end -->
+    <div class="demo-stage-overlay demo-card-screen small-logo" id="scrEnd">
+        <div class="demo-logo">Pling<span class="bang">!</span></div>
+        <div class="demo-tag">See who's free, right now.</div>
+        <div class="demo-link">join the beta · pling.app</div>
+    </div>
+
+    <div class="demo-dot" id="dot"></div>
+
+    <div class="demo-caption-layer">
+        <span class="demo-caption show" id="caption">Ever bored and don't know who's around?</span>
+    </div>
+</div>
+
+<script>
+/* ============================================================
+   Pling — Self-Playing Demo
+   Alex's phone is the REAL prototype via iframe.
+   Sequencer drives prototype DOM directly — exact fidelity.
+   ============================================================ */
+
+// pace knobs
+const HOLD_SHORT     = 600;
+const HOLD_KEY       = 1500;
+const HOLD_LONG      = 2200;
+const MOVE_DUR       = 550;
+const MOVE_SHORT     = 350;
+const TRANSITION_DUR = 320;
+const ZOOM_DUR       = 380;
+const SLIDE_DUR      = 1250;
+const CAPTION_FADE   = 360;
+const EASE           = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+const stage    = $('#stage');
+const dot      = $('#dot');
+const caption  = $('#caption');
+const phones   = $('#phones');
+const frame    = $('#alexFrame');
+const emilyScr = $('#emilyScreen');
+
+// shorthand to iframe doc/win
+const fd = () => frame.contentDocument;
+const fw = () => frame.contentWindow;
+
+// ----- iframe ready -----
+function frameReady() {
+    return new Promise((resolve) => {
+        const check = () => {
+            try {
+                if (fd() && fd().readyState === 'complete' && fw().settle) {
+                    return true;
+                }
+            } catch (e) {}
+            return false;
+        };
+        if (check()) return resolve();
+        const onload = () => {
+            const wait = setInterval(() => {
+                if (check()) { clearInterval(wait); resolve(); }
+            }, 50);
+        };
+        frame.addEventListener('load', onload, { once: true });
+        // failsafe in case load already fired
+        setTimeout(onload, 100);
+    });
+}
+
+// strip outer phone chrome inside the iframe so the prototype's .screen fills the iframe
+function injectFrameStyles() {
+    const d = fd();
+    if (!d) return;
+    const style = d.createElement('style');
+    style.id = 'demoInjected';
+    style.textContent = `
+        html, body {
+            height: 100% !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+            display: block !important;
+            overflow: hidden !important;
+        }
+        .phone {
+            width: 100% !important; height: 100% !important;
+            padding: 0 !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            position: relative !important;
+        }
+        .notch { display: none !important; }
+        .screen {
+            border-radius: 0 !important;
+            height: 100% !important;
+            width: 100% !important;
+            position: absolute !important;
+            inset: 0 !important;
+            overflow: hidden !important;
+        }
+
+    `;
+    d.head.appendChild(style);
+}
+
+// (recs are native to the prototype now — no injection needed)
+
+// ----- tap dot -----
+function showDot() { dot.classList.add('visible'); }
+function hideDot() { dot.classList.remove('visible'); }
+
+function placeDot(x, y, dur) {
+    dot.style.transition = `left ${dur}ms ${EASE}, top ${dur}ms ${EASE}, opacity 0.25s ease, transform 0.12s ease`;
+    dot.style.left = x + 'px';
+    dot.style.top  = y + 'px';
+}
+
+function targetCenterInStage(sel, inFrame) {
+    const root = inFrame === 'emily' ? emilyScr : (inFrame ? fd() : document);
+    const target = root.querySelector(sel);
+    if (!target) return null;
+    const r = target.getBoundingClientRect();
+    const stageR = stage.getBoundingClientRect();
+    if (inFrame === true) {
+        // iframe element rect is in stage-viewport coords (already scaled by parent's CSS transform).
+        // Inner element rect is in iframe-doc-viewport coords (UNSCALED).
+        // Multiply inner coords by the iframe display scale before adding.
+        const fr = frame.getBoundingClientRect();
+        const sx = fr.width  / frame.contentWindow.innerWidth;
+        const sy = fr.height / frame.contentWindow.innerHeight;
+        return {
+            x: fr.left + (r.left + r.width  / 2) * sx - stageR.left,
+            y: fr.top  + (r.top  + r.height / 2) * sy - stageR.top,
+            el: target,
+        };
+    }
+    return { x: r.left + r.width/2 - stageR.left, y: r.top + r.height/2 - stageR.top, el: target };
+}
+
+async function moveDotTo(sel, dur = MOVE_DUR, inFrame = true) {
+    const c = targetCenterInStage(sel, inFrame);
+    if (!c) return;
+    placeDot(c.x, c.y, dur);
+    showDot();
+    await sleep(dur);
+}
+
+async function tap() {
+    dot.classList.add('press');
+    await sleep(120);
+    dot.classList.remove('press');
+    dot.classList.remove('ripple');
+    void dot.offsetWidth;
+    dot.classList.add('ripple');
+    await sleep(260);
+}
+
+// ----- captions -----
+async function setCaption(text) {
+    if (caption.textContent === text) return;
+    if (text === '') {
+        caption.classList.remove('show');
+        await sleep(CAPTION_FADE);
+        caption.textContent = '';
+        return;
+    }
+    if (caption.classList.contains('show')) {
+        caption.classList.remove('show');
+        await sleep(CAPTION_FADE);
+    }
+    caption.textContent = text;
+    await sleep(20);
+    caption.classList.add('show');
+    await sleep(CAPTION_FADE);
+}
+
+// ----- overlay screens -----
+async function showOverlay(id, scopeSel = '#alexScreen') {
+    hideDot();
+    $(scopeSel).querySelectorAll('.demo-screen').forEach(s => s.classList.remove('active'));
+    await sleep(40);
+    if (id) $('#' + id).classList.add('active');
+    await sleep(TRANSITION_DUR);
+}
+
+async function hideOverlays(scopeSel = '#alexScreen') {
+    $(scopeSel).querySelectorAll('.demo-screen').forEach(s => s.classList.remove('active'));
+    await sleep(TRANSITION_DUR);
+}
+
+async function showEmilyOverlay(id) {
+    $('#emilyScreen').querySelectorAll('.demo-screen').forEach(s => s.classList.remove('active'));
+    await sleep(40);
+    if (id) $('#' + id).classList.add('active');
+    await sleep(TRANSITION_DUR);
+}
+
+async function showStageEnd() {
+    $('#scrEnd').classList.add('active');
+    await sleep(450);
+}
+async function hideStageEnd() {
+    $('#scrEnd').classList.remove('active');
+}
+
+// ----- zoom inside iframe -----
+async function zoomFrameEl(sel, scale, dur = ZOOM_DUR, origin = 'center center') {
+    const el = fd().querySelector(sel);
+    if (!el) return;
+    el.style.transition = `transform ${dur}ms ${EASE}`;
+    el.style.transformOrigin = origin;
+    // .sheet's open state is set in CSS via `transform: translateY(0)`. A bare
+    // inline `scale(X)` OVERRIDES that, which silently snaps the sheet closed.
+    // Prepend translateY(0) when the target is a sheet to preserve its open pose.
+    const prefix = el.classList.contains('sheet') ? 'translateY(0) ' : '';
+    el.style.transform = `${prefix}scale(${scale})`;
+    await sleep(dur);
+}
+
+// ----- slide-to-free: drive the prototype directly -----
+async function runSlide(dur = SLIDE_DUR) {
+    const d = fd();
+    const hero = d.getElementById('hero');
+    const knob = d.getElementById('knob');
+    const fill = d.getElementById('fill');
+    const track = d.getElementById('track');
+    const hintRight = d.getElementById('hintRight');
+    if (!hero || !knob || !fill || !track) return;
+
+    const trackW = track.clientWidth;
+    const knobW  = 56;
+    const PAD    = 5;
+    const maxX   = trackW - knobW - PAD * 2;
+
+    knob.style.transition = `left ${dur}ms ${EASE}`;
+    fill.style.transition = `width ${dur}ms ${EASE}`;
+    if (hintRight) {
+        hintRight.style.transition = `opacity ${Math.floor(dur*0.5)}ms ease`;
+        hintRight.style.opacity = '0.15';
+    }
+
+    dot.classList.add('press');
+    await sleep(140);
+
+    // dot path: knob start → knob end in stage coords, with iframe-display scaling
+    const fr = frame.getBoundingClientRect();
+    const stageR = stage.getBoundingClientRect();
+    const knobR = knob.getBoundingClientRect();
+    const sx = fr.width / frame.contentWindow.innerWidth;
+    const startX = fr.left + (knobR.left + knobR.width / 2) * sx - stageR.left;
+    const endX = startX + maxX * sx;
+
+    dot.style.transition = `left ${dur}ms ${EASE}, top ${dur}ms ${EASE}`;
+    dot.style.left = endX + 'px';
+
+    knob.style.left = (PAD + maxX) + 'px';
+    fill.style.width = (knobW + maxX) + 'px';
+
+    // flip prototype state ~82% through the slide so colors snap into place
+    setTimeout(() => {
+        try { fw().settle(true); } catch (e) {}
+    }, dur * 0.82);
+
+    await sleep(dur);
+    dot.classList.remove('press');
+}
+
+// ----- counter pulse -----
+async function pulseCounter() {
+    const card = fd().querySelector('.counter-card');
+    if (!card) return;
+    const faces = card.querySelectorAll('.counter-faces .avatar');
+    faces.forEach((f, i) => {
+        f.style.transition = `transform 0.32s ${EASE}`;
+        setTimeout(() => { f.style.transform = 'scale(1.18)'; }, i * 80);
+        setTimeout(() => { f.style.transform = 'scale(1)'; }, i * 80 + 350);
+    });
+    await sleep(900);
+}
+
+// ----- open Emily profile via prototype -----
+async function openEmilyProfile() {
+    try {
+        fw().openProfile('Emily Carter');
+    } catch (e) {}
+    await sleep(TRANSITION_DUR + 60);
+}
+
+async function closeEmilyProfile() {
+    try { fw().closeProfile(); } catch (e) {}
+    await sleep(TRANSITION_DUR);
+}
+
+// ----- Pling Emily -----
+async function plingedConfirm() {
+    const btn = fd().getElementById('pfPling');
+    if (!btn) return;
+    btn.style.transition = 'transform 0.18s, background 0.34s ease, box-shadow 0.34s ease';
+    btn.style.transform = 'scale(0.94)';
+    await sleep(150);
+    btn.style.transform = 'scale(1)';
+    btn.style.background = '#20C997';
+    btn.style.boxShadow = '0 14px 30px rgba(32, 201, 151,0.5)';
+    btn.textContent = '✓  Plinged!';
+    await sleep(80);
+}
+
+// ----- inline recommendation chips -----
+// The prototype (profile.js) renders the native recs row inside the profile
+// sheet on openProfile. We drive THAT — no injected row (which caused a 2nd row).
+async function showRecs() {
+    // native recs are already rendered by openProfile; nothing to inject.
+    await sleep(200);
+}
+
+// Custom click → prototype swaps the chip row to the text input in place.
+async function swapRecsToInput() {
+    try { fw().openRecCustom(); } catch (e) {}
+    await sleep(320);
+}
+
+// type into the prototype's native custom input (#pfCustomInput). Full-row input.
+async function typeIntoInput(text, totalMs = 1500) {
+    const input = fd().getElementById('pfCustomInput');
+    if (!input) return;
+    input.removeAttribute('readonly');
+    try { input.focus({ preventScroll: true }); } catch (e) {}
+    input.value = '';
+    const perChar = Math.max(40, Math.floor(totalMs / text.length));
+    for (let i = 0; i < text.length; i++) {
+        input.value = text.slice(0, i + 1);
+        await sleep(perChar);
+    }
+}
+
+function hideRecs() { /* prototype resets recs on closeProfile — no-op */ }
+
+// ----- Emily phone helpers -----
+async function showNotifBanner() {
+    $('#notifBanner').classList.add('show');
+    await sleep(560);
+}
+async function joinPressed() {
+    const btn = $('#emilyJoinBtn');
+    dot.classList.add('press');
+    await sleep(140);
+    dot.classList.remove('press');
+    btn.classList.add('joined');
+    btn.textContent = '✓ Joined';
+    await sleep(120);
+}
+
+// ----- two-phone layout -----
+async function splitPhones()  { phones.classList.add('split');  await sleep(770); }
+async function mergePhones()  { phones.classList.remove('split'); await sleep(770); }
+// both phones glide to center and overlap into one (after both show "linking up")
+async function mergeIntoOne() { phones.classList.remove('split'); phones.classList.add('merged'); await sleep(820); }
+
+// ----- reset for looping -----
+function resetState() {
+    const d = fd();
+    if (d) {
+        const hero = d.getElementById('hero');
+        const sheet = d.getElementById('profileSheet');
+        const knob = d.getElementById('knob');
+        const fill = d.getElementById('fill');
+        const hintRight = d.getElementById('hintRight');
+        const status = d.getElementById('heroStatus');
+        try { fw().settle(false); } catch (e) {}
+        if (hero) { hero.style.transform = ''; hero.style.transition = ''; }
+        if (sheet) { sheet.style.transform = ''; sheet.style.transition = ''; sheet.style.transformOrigin = ''; }
+        if (knob) { knob.style.transition = 'none'; knob.style.left = '5px'; }
+        if (fill) { fill.style.transition = 'none'; fill.style.width = '58px'; }
+        if (hintRight) { hintRight.style.transition = ''; hintRight.style.opacity = ''; }
+        if (status) status.textContent = 'Busy';
+
+        try { fw().closeProfile(); } catch (e) {}
+
+        // reset recs visibility
+        hideRecs();
+
+        const btn = d.getElementById('pfPling');
+        if (btn) {
+            btn.style.background = '';
+            btn.style.boxShadow = '';
+            btn.style.transform = '';
+            btn.style.transition = '';
+        }
+
+        d.querySelectorAll('.counter-faces .avatar').forEach(f => {
+            f.style.transform = '';
+            f.style.transition = '';
+        });
+
+        try { fw().scrollTo(0, 0); } catch (e) {}
+        const content = d.querySelector('.content');
+        if (content) content.scrollTop = 0;
+        const screen = d.querySelector('.screen');
+        if (screen) screen.scrollTop = 0;
+    }
+
+    // emily phone
+    $('#notifBanner').classList.remove('show');
+    const jb = $('#emilyJoinBtn');
+    jb.classList.remove('joined');
+    jb.textContent = 'Join';
+
+    // emily overlays
+    $('#emilyScreen').querySelectorAll('.demo-screen').forEach(s => s.classList.remove('active'));
+
+    // stage end card
+    $('#scrEnd').classList.remove('active');
+
+    // dot
+    hideDot();
+    dot.classList.remove('press', 'ripple');
+
+    // caption
+    caption.classList.remove('show');
+    caption.textContent = '';
+
+    // phones back to single-centered
+    phones.classList.remove('split');
+    phones.classList.remove('merged');
+
+    // alex overlays
+    $('#alexScreen').querySelectorAll('.demo-screen').forEach(s => s.classList.remove('active'));
+    $('#scrCold').classList.add('active');
+}
+
+// ============================================================
+// SEQUENCER
+// ============================================================
+const SEQUENCE = [
+    // SCENE 0 — Cold open
+    { fn: async () => { await setCaption("Ever bored and don't know who's around?"); } },
+    { wait: 2300 },
+    { fn: async () => { await setCaption(''); } },
+
+    // SCENE 1 — Home busy
+    { fn: async () => { await hideOverlays(); } },
+    { fn: async () => { await setCaption("You're now available."); } },
+    { fn: async () => { await moveDotTo('#hero', MOVE_DUR, true); } },
+    { wait: 1100 },
+
+    // SCENE 2 — Slide to free
+    { fn: async () => { await moveDotTo('#knob', MOVE_SHORT, true); } },
+    { fn: async () => { await setCaption("Slide to let your friends know."); } },
+    { fn: async () => { await zoomFrameEl('#hero', 1.06, ZOOM_DUR); } },
+    { fn: async () => { await runSlide(SLIDE_DUR); } },
+    { wait: 400 },
+    { fn: async () => { await zoomFrameEl('#hero', 1.0, ZOOM_DUR); } },
+    { wait: 700 },
+
+    // SCENE 3 — See who's free
+    { fn: async () => { await moveDotTo('.counter-card', MOVE_DUR, true); } },
+    { fn: async () => { await pulseCounter(); } },
+    { fn: async () => { await setCaption("And see who else is."); } },
+    { wait: 2200 },
+
+    // SCENE 4 — Open Emily
+    { fn: async () => { await moveDotTo('.friend[onclick*="Emily Carter"]', MOVE_DUR, true); } },
+    { fn: async () => { await tap(); } },
+    { fn: async () => { await setCaption("Pick someone."); } },
+    { fn: async () => { hideDot(); await openEmilyProfile(); } },
+    { wait: HOLD_KEY },
+
+    // SCENE 5 — Pick a vibe → Custom → Type → Pling
+    { fn: async () => { await zoomFrameEl('#profileSheet', 1.05, ZOOM_DUR, 'center bottom'); } },
+    { fn: async () => { await showRecs(); } },
+    { fn: async () => { await setCaption("Pick a vibe."); } },
+    { wait: 700 },
+    { fn: async () => { await moveDotTo('.pf-rec-chip.custom', MOVE_DUR, true); } },
+    { fn: async () => { await tap(); } },
+    { fn: async () => { await swapRecsToInput(); } },
+    { wait: 250 },
+    { fn: async () => { await typeIntoInput("Study at Thompson Library", 1500); } },
+    { wait: 500 },
+    { fn: async () => { await moveDotTo('#pfPling', MOVE_DUR, true); } },
+    { fn: async () => { await setCaption("Send the Pling."); } },
+    { fn: async () => { await tap(); await plingedConfirm(); } },
+    { wait: 500 },
+    { fn: async () => { await zoomFrameEl('#profileSheet', 1.0, ZOOM_DUR, 'center bottom'); } },
+
+    // SCENE 6 — Sweep: Alex slides left, Emily phone enters from right
+    { fn: async () => { hideDot(); await splitPhones(); } },
+    { fn: async () => { await setCaption("They get it instantly — no group chat."); } },
+    { wait: 500 },
+    { fn: async () => { await showNotifBanner(); } },
+    { wait: 1100 },
+    { fn: async () => { await moveDotTo('#emilyJoinBtn', MOVE_DUR, 'emily'); } },
+    { fn: async () => { await tap(); await joinPressed(); } },
+    { wait: 1200 },
+
+    // SCENE 7 — Both phones STAY split, "You're linking up" lands on both
+    { fn: async () => { hideDot(); } },
+    { fn: async () => { await Promise.all([showOverlay('scrLinkup'), showEmilyOverlay('emilyScrLinkup')]); } },
+    { fn: async () => { await setCaption("You're hanging out in 30 seconds."); } },
+    { wait: 2600 },
+
+    // SCENE 8 — the two phones merge into one, then fade to the Pling end card
+    { fn: async () => { await setCaption(''); } },
+    { fn: async () => { await mergeIntoOne(); } },
+    { wait: 600 },
+    { fn: async () => { await showStageEnd(); } },
+    { wait: 1700 },
+];
+
+// ============================================================
+// PLAY LOOP
+// ============================================================
+let cancelled = false;
+let progressTimer = null;
+
+function startProgressBar(totalMs) {
+    const bar = $('#progressBar');
+    bar.style.transition = 'none';
+    bar.style.width = '0%';
+    const start = performance.now();
+    if (progressTimer) clearInterval(progressTimer);
+    progressTimer = setInterval(() => {
+        const pct = Math.min(100, ((performance.now() - start) / totalMs) * 100);
+        bar.style.width = pct + '%';
+        if (pct >= 100) clearInterval(progressTimer);
+    }, 80);
+}
+
+function estimateTotal() {
+    return SEQUENCE.reduce((sum, s) => sum + (s.wait || 600), 0) + 4000;
+}
+
+async function runOnce() {
+    for (const step of SEQUENCE) {
+        if (cancelled) return;
+        if (step.fn)   await step.fn();
+        if (step.wait) await sleep(step.wait);
+    }
+}
+
+let demoRunning = false;
+async function loop() {
+    if (demoRunning) return;     // never run two loops at once
+    demoRunning = true;
+    while (!cancelled) {
+        resetState();
+        await sleep(120);
+        startProgressBar(estimateTotal());
+        await runOnce();
+        await sleep(1500);
+    }
+    demoRunning = false;
+}
+
+$('#restartBtn').addEventListener('click', () => {
+    cancelled = true;
+    setTimeout(() => { cancelled = false; loop(); }, 200);
+});
+
+// Pause/resume when embedded in the landing page (offscreen iframe → stop the
+// animation loop to save CPU/battery). Driven by postMessage from index.html.
+window.addEventListener('message', (e) => {
+    const d = e && e.data;
+    if (!d || d.type !== 'pling-demo') return;
+    if (d.action === 'pause') {
+        cancelled = true;            // loop exits after the current step
+    } else if (d.action === 'resume') {
+        if (cancelled || !demoRunning) { cancelled = false; loop(); }
+    }
+});
+
+// boot
+window.addEventListener('load', async () => {
+    await frameReady();
+    injectFrameStyles();
+    // pre-build the prototype profile sheet so the FIRST openProfile transitions
+    // cleanly (browser otherwise batches insert+class-add into one frame and skips
+    // the slide-up animation on the first run)
+    try { fw().buildSheet(); } catch (e) {}
+    setTimeout(loop, 400);
+});
+</script>
+
+
+</body></html>

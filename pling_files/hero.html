@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)https://warren-duan.github.io/hero.html?v=5 -->
+<html lang="en" style="--accent: #e1457e; --accent-2: #a96cf0; --grad-start: #ff8a5c; --grad-end: #9a5cf0; --accent-rgb: 225, 69, 126; --shadow: rgba(225, 69, 126, 0.14); --avail-1: #ff8a5c; --avail-2: #9a5cf0; --busy-1: #3d2b8f; --busy-2: #5b4acd; --avail-shadow: rgba(225, 69, 126, 0.4); --busy-shadow: rgba(61, 43, 143, 0.42);"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pling — Hero</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./nav.js"></script>
+    <style>
+        /* ============================================================
+           HERO ANIMATION — a single phone clicking through the real app.
+           Embeds app.html (the prototype) bezel-stripped, scaled to fill,
+           and auto-navigates the menus with a tap-dot. No second phone,
+           no overlays — just a clean product tour. Self-scaling so the
+           landing only needs to embed this at 100%.
+           ============================================================ */
+        html, body {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: var(--app-bg);
+            overflow: hidden;
+        }
+        #stage {
+            position: absolute; inset: 0;
+            overflow: hidden;
+        }
+        /* the app renders at a fixed 390x844 and is scaled to fill the stage */
+        #appFrame {
+            position: absolute;
+            top: 0; left: 0;
+            width: 390px;
+            height: 844px;
+            border: 0;
+            transform-origin: top left;
+            background: var(--app-bg);
+            pointer-events: none;
+        }
+
+        /* ----- tap dot ----- */
+        #dot {
+            position: absolute;
+            left: 0; top: 0;
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.92);
+            border: 1.5px solid rgba(var(--accent-rgb), 0.55);
+            box-shadow: 0 6px 18px rgba(var(--accent-rgb), 0.35), 0 0 0 6px rgba(var(--accent-rgb), 0.12);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 50;
+            transition: opacity 0.25s ease;
+        }
+        #dot.visible { opacity: 1; }
+        #dot::after {
+            content: '';
+            position: absolute; inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(var(--accent-rgb), 0.7);
+            opacity: 0;
+        }
+        #dot.ripple::after { animation: dotRipple 0.6s ease-out; }
+        @keyframes dotRipple {
+            0%   { transform: scale(0.8); opacity: 0.9; }
+            100% { transform: scale(2.7); opacity: 0; }
+        }
+        #dot.press { transform: translate(-50%, -50%) scale(0.78); transition: transform 0.12s ease; }
+    </style>
+<style>.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: #0000ff;
+  --rdp-background-color: #e7edff;
+  --rdp-accent-color-dark: #3003e1;
+  --rdp-background-color-dark: #180270;
+  --rdp-outline: 2px solid var(--rdp-accent-color); /* Outline border for focused elements */
+  --rdp-outline-selected: 2px solid rgba(0, 0, 0, 0.75); /* Outline border for focused _and_ selected elements */
+
+  margin: 1em;
+}
+
+/* Hide elements for devices that are not screen readers */
+.rdp-vhidden {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute !important;
+  top: 0;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+  border: 0 !important;
+}
+
+/* Buttons */
+.rdp-button_reset {
+  appearance: none;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  cursor: default;
+  color: inherit;
+  outline: none;
+  background: none;
+  font: inherit;
+
+  -moz-appearance: none;
+  -webkit-appearance: none;
+}
+
+.rdp-button {
+  border: 2px solid transparent;
+}
+
+.rdp-button[disabled] {
+  opacity: 0.25;
+}
+
+.rdp-button:not([disabled]) {
+  cursor: pointer;
+}
+
+.rdp-button:focus:not([disabled]),
+.rdp-button:active:not([disabled]) {
+  color: inherit;
+  border: var(--rdp-outline);
+  background-color: var(--rdp-background-color);
+}
+
+.rdp-button:hover:not([disabled]) {
+  background-color: var(--rdp-background-color);
+}
+
+.rdp-months {
+  display: flex;
+}
+
+.rdp-month {
+  margin: 0 1em;
+}
+
+.rdp-month:first-child {
+  margin-left: 0;
+}
+
+.rdp-month:last-child {
+  margin-right: 0;
+}
+
+.rdp-table {
+  margin: 0;
+  max-width: calc(var(--rdp-cell-size) * 7);
+  border-collapse: collapse;
+}
+
+.rdp-with_weeknumber .rdp-table {
+  max-width: calc(var(--rdp-cell-size) * 8);
+  border-collapse: collapse;
+}
+
+.rdp-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  text-align: left;
+}
+
+.rdp-multiple_months .rdp-caption {
+  position: relative;
+  display: block;
+  text-align: center;
+}
+
+.rdp-caption_dropdowns {
+  position: relative;
+  display: inline-flex;
+}
+
+.rdp-caption_label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0 0.25em;
+  white-space: nowrap;
+  color: currentColor;
+  border: 0;
+  border: 2px solid transparent;
+  font-family: inherit;
+  font-size: 140%;
+  font-weight: bold;
+}
+
+.rdp-nav {
+  white-space: nowrap;
+}
+
+.rdp-multiple_months .rdp-caption_start .rdp-nav {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.rdp-multiple_months .rdp-caption_end .rdp-nav {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+}
+
+.rdp-nav_button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--rdp-cell-size);
+  height: var(--rdp-cell-size);
+  padding: 0.25em;
+  border-radius: 100%;
+}
+
+/* ---------- */
+/* Dropdowns  */
+/* ---------- */
+
+.rdp-dropdown_year,
+.rdp-dropdown_month {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.rdp-dropdown {
+  appearance: none;
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  cursor: inherit;
+  opacity: 0;
+  border: none;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.rdp-dropdown[disabled] {
+  opacity: unset;
+  color: unset;
+}
+
+.rdp-dropdown:focus:not([disabled]) + .rdp-caption_label,
+.rdp-dropdown:active:not([disabled]) + .rdp-caption_label {
+  border: var(--rdp-outline);
+  border-radius: 6px;
+  background-color: var(--rdp-background-color);
+}
+
+.rdp-dropdown_icon {
+  margin: 0 0 0 5px;
+}
+
+.rdp-head {
+  border: 0;
+}
+
+.rdp-head_row,
+.rdp-row {
+  height: 100%;
+}
+
+.rdp-head_cell {
+  vertical-align: middle;
+  text-transform: uppercase;
+  font-size: 0.75em;
+  font-weight: 700;
+  text-align: center;
+  height: 100%;
+  height: var(--rdp-cell-size);
+  padding: 0;
+}
+
+.rdp-tbody {
+  border: 0;
+}
+
+.rdp-tfoot {
+  margin: 0.5em;
+}
+
+.rdp-cell {
+  width: var(--rdp-cell-size);
+  height: 100%;
+  height: var(--rdp-cell-size);
+  padding: 0;
+  text-align: center;
+}
+
+.rdp-weeknumber {
+  font-size: 0.75em;
+}
+
+.rdp-weeknumber,
+.rdp-day {
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--rdp-cell-size);
+  max-width: var(--rdp-cell-size);
+  height: var(--rdp-cell-size);
+  margin: 0;
+  border: 2px solid transparent;
+  border-radius: 100%;
+}
+
+.rdp-day_today:not(.rdp-day_outside) {
+  font-weight: bold;
+}
+
+.rdp-day_selected:not([disabled]),
+.rdp-day_selected:focus:not([disabled]),
+.rdp-day_selected:active:not([disabled]),
+.rdp-day_selected:hover:not([disabled]) {
+  color: white;
+  background-color: var(--rdp-accent-color);
+}
+
+.rdp-day_selected:focus:not([disabled]) {
+  border: var(--rdp-outline-selected);
+}
+
+.rdp:not([dir='rtl']) .rdp-day_range_start:not(.rdp-day_range_end) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.rdp:not([dir='rtl']) .rdp-day_range_end:not(.rdp-day_range_start) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.rdp[dir='rtl'] .rdp-day_range_start:not(.rdp-day_range_end) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.rdp[dir='rtl'] .rdp-day_range_end:not(.rdp-day_range_start) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.rdp-day_range_end.rdp-day_range_start {
+  border-radius: 100%;
+}
+
+.rdp-day_range_middle {
+  border-radius: 0;
+}
+</style></head>
+<body>
+<div id="stage">
+    <iframe id="appFrame" src="./app.html" title="Pling app" style="left: 0px; top: 0px; transform: scale(0.815385);"></iframe>
+    <div id="dot" class="ripple visible press" style="transition: left 460ms cubic-bezier(0.32, 0.72, 0, 1), top 460ms cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s, transform 0.12s; left: 159px; top: 504.979px;"></div>
+</div>
+
+<script>
+/* ============================================================
+   Single-phone menu tour. Drives app.html's global functions.
+   ============================================================ */
+const EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const stage = document.getElementById('stage');
+const frame = document.getElementById('appFrame');
+const dot   = document.getElementById('dot');
+
+const fd = () => frame.contentDocument;
+const fw = () => frame.contentWindow;
+const NATIVE_W = 390, NATIVE_H = 844;
+let scale = 1, offX = 0, offY = 0;
+
+// ---------- scale app to fit the stage WIDTH ----------
+// The stage (.lp-hero-device-screen) is sized at the app's exact 390:844
+// aspect, so a width fit fills it perfectly — no gap, no horizontal crop.
+function fitApp() {
+    const W = stage.clientWidth;
+    scale = W / NATIVE_W;
+    offX = 0; offY = 0;
+    frame.style.left = '0px';
+    frame.style.top = '0px';
+    frame.style.transform = 'scale(' + scale + ')';
+}
+window.addEventListener('resize', fitApp);
+
+// ---------- frame ready ----------
+function frameReady() {
+    return new Promise((resolve) => {
+        const ok = () => {
+            try { return fd() && fd().readyState === 'complete' && fw().settle; } catch (e) { return false; }
+        };
+        if (ok()) return resolve();
+        const wait = setInterval(() => { if (ok()) { clearInterval(wait); resolve(); } }, 50);
+        frame.addEventListener('load', () => { if (ok()) resolve(); }, { once: true });
+    });
+}
+
+// strip the prototype's phone chrome so its .screen fills the iframe
+function injectFrameStyles() {
+    const d = fd();
+    if (!d || d.getElementById('heroInjected')) return;
+    const s = d.createElement('style');
+    s.id = 'heroInjected';
+    s.textContent = `
+        html, body { height:100%!important; min-height:0!important; margin:0!important; padding:0!important; background:transparent!important; display:block!important; overflow:hidden!important; }
+        .phone { width:100%!important; height:100%!important; padding:0!important; background:transparent!important; border-radius:0!important; box-shadow:none!important; position:relative!important; }
+        .notch { display:none!important; }
+        .screen { border-radius:0!important; width:100%!important; height:100%!important; position:absolute!important; inset:0!important; overflow:hidden!important; }
+    `;
+    d.head.appendChild(s);
+}
+
+// ---------- tap dot ----------
+function showDot() { dot.classList.add('visible'); }
+function hideDot() { dot.classList.remove('visible'); }
+
+function centerOf(sel) {
+    const el = fd().querySelector(sel);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { x: offX + (r.left + r.width / 2) * scale, y: offY + (r.top + r.height / 2) * scale, el };
+}
+
+async function moveDotTo(sel, dur = 520) {
+    const c = centerOf(sel);
+    if (!c) return;
+    dot.style.transition = `left ${dur}ms ${EASE}, top ${dur}ms ${EASE}, opacity 0.25s ease, transform 0.12s ease`;
+    dot.style.left = c.x + 'px';
+    dot.style.top  = c.y + 'px';
+    showDot();
+    await sleep(dur);
+}
+
+async function tap() {
+    dot.classList.add('press');
+    await sleep(120);
+    dot.classList.remove('press');
+    dot.classList.remove('ripple'); void dot.offsetWidth; dot.classList.add('ripple');
+    await sleep(240);
+}
+
+function call(fn, ...args) { try { fw()[fn] && fw()[fn](...args); } catch (e) {} }
+
+// ---------- slide the status knob to Available ----------
+async function slideToAvailable(dur = 1100) {
+    const d = fd();
+    const knob = d.getElementById('knob');
+    const fill = d.getElementById('fill');
+    const track = d.getElementById('track');
+    const hint = d.getElementById('hintRight');
+    if (!knob || !track) return;
+    const maxX = track.clientWidth - 56 - 10;
+    knob.style.transition = `left ${dur}ms ${EASE}`;
+    if (fill) fill.style.transition = `width ${dur}ms ${EASE}`;
+    if (hint) { hint.style.transition = `opacity ${dur*0.5}ms ease`; hint.style.opacity = '0.15'; }
+
+    dot.classList.add('press');
+    await sleep(130);
+    const kr = knob.getBoundingClientRect();
+    const startX = offX + (kr.left + kr.width/2) * scale;
+    dot.style.transition = `left ${dur}ms ${EASE}, top ${dur}ms ${EASE}`;
+    dot.style.left = (startX + maxX * scale) + 'px';
+    knob.style.left = (5 + maxX) + 'px';
+    if (fill) fill.style.width = (56 + maxX) + 'px';
+    setTimeout(() => call('settle', true), dur * 0.82);
+    await sleep(dur);
+    dot.classList.remove('press');
+}
+
+// ---------- reset to a clean Home/Busy ----------
+function resetApp() {
+    const d = fd();
+    try { fw().settle(false); } catch (e) {}
+    try { fw().closeProfile && fw().closeProfile(); } catch (e) {}
+    try { fw().closeSettings && fw().closeSettings(); } catch (e) {}
+    try { fw().closeDur && fw().closeDur(); } catch (e) {}
+    try { fw().closeStart && fw().closeStart(); } catch (e) {}
+    if (d) {
+        const knob = d.getElementById('knob'), fill = d.getElementById('fill'), hint = d.getElementById('hintRight');
+        if (knob) { knob.style.transition='none'; knob.style.left='5px'; }
+        if (fill) { fill.style.transition='none'; fill.style.width='58px'; }
+        if (hint) { hint.style.transition=''; hint.style.opacity=''; }
+        const content = d.querySelector('.content'); if (content) content.scrollTop = 0;
+        const sc = d.querySelector('.screen'); if (sc) sc.scrollTop = 0;
+    }
+    hideDot();
+    dot.classList.remove('press','ripple');
+}
+
+// ============================================================
+// TOUR — one phone, clicking through the menus. Edit freely.
+// ============================================================
+async function tour() {
+    // PERF: bail between steps when the landing scrolls this iframe off-screen
+    // (`paused` flips via postMessage) — otherwise a full ~12s tour keeps
+    // animating the nested app invisibly.
+
+    // 1) slide to Available (the signature gesture)
+    await moveDotTo('#knob', 420);
+    await slideToAvailable(1050);
+    await sleep(750);
+    if (paused) return;
+
+    // 2) open a friend's profile
+    await moveDotTo('.friend[onclick*="Emily Carter"]', 520);
+    await tap();
+    hideDot();
+    call('openProfile', 'Emily Carter');
+    await sleep(950);
+    if (paused) { call('closeProfile'); return; }
+
+    // 3) tap a recommended activity inside the profile
+    await sleep(150);
+    if (fd().getElementById('pfRecs')) {
+        await moveDotTo('#pfRecs .pf-rec-chip', 460);
+        await tap();
+        await sleep(700);
+    }
+    // close profile
+    hideDot();
+    call('closeProfile');
+    await sleep(650);
+    if (paused) return;
+
+    // 4) open the duration picker from the status card
+    await moveDotTo('.duration-pill', 520);
+    await tap();
+    hideDot();
+    call('openDur');
+    await sleep(800);
+    // pick an option
+    const durOpt = [...fd().querySelectorAll('.dur-opt')][3];
+    if (durOpt) {
+        await moveDotTo('.dur-opt:nth-child(4)', 460);
+        await tap();
+    }
+    call('pickDur', '1 hr');
+    await sleep(550);
+    call('closeDur');
+    await sleep(600);
+    if (paused) return;
+
+    // 5) open settings
+    await moveDotTo('.gear', 520);
+    await tap();
+    hideDot();
+    call('openSettings');
+    await sleep(950);
+    // peek the Schedule sub-view
+    await moveDotTo('.set-menurow:nth-child(2)', 480);
+    await tap();
+    call('setShowView', 'setSchedule');
+    await sleep(1100);
+    hideDot();
+    call('closeSettings');
+    await sleep(650);
+    if (paused) return;
+
+    // 6) start-a-hangout (only visible while Available)
+    await moveDotTo('.start-hangout', 520);
+    await tap();
+    hideDot();
+    call('openStart');
+    await sleep(1100);
+    call('closeStart');
+    await sleep(650);
+}
+
+// ============================================================
+// LOOP
+// ============================================================
+let running = false;
+let paused = false;
+async function loop() {
+    if (running) return;
+    running = true;
+    while (!paused) {
+        resetApp();
+        await sleep(400);
+        if (paused) break;
+        await tour();
+        if (paused) break;
+        await sleep(900);
+    }
+    running = false;
+}
+
+// pause/resume when offscreen (driven by the landing page) — stops the whole
+// tour (and its constant DOM mutation/reflow) while the hero isn't visible.
+window.addEventListener('message', (e) => {
+    const d = e && e.data;
+    if (!d || d.type !== 'pling-demo') return;
+    if (d.action === 'pause') {
+        paused = true;
+    } else if (d.action === 'resume') {
+        paused = false;
+        if (!running) loop();
+    }
+});
+
+window.addEventListener('load', async () => {
+    fitApp();
+    await frameReady();
+    injectFrameStyles();
+    fitApp();
+    // ?static = show the real screen, skip the auto-playing tour (mobile: saves
+    // battery + avoids the constant DOM mutation). The landing swaps this frame
+    // to the animated version when the user taps "Watch it move".
+    var isStatic = new URLSearchParams(location.search).has('static');
+    if (!isStatic) setTimeout(loop, 350);
+});
+</script>
+
+
+</body></html>

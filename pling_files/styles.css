@@ -1,0 +1,586 @@
+/* Pling — shared styles across all screens */
+:root {
+    --bg-page: #0a0a0f;
+    --app-bg: #fbeef1;
+    --card-white: #fffaf6;
+    --grad-start: #ff8a5c;
+    --grad-end: #9a5cf0;
+    --accent: #e1457e;
+    --accent-2: #a96cf0;        /* wordmark / avatar 2nd gradient stop — themeable */
+    --accent-rgb: 224, 90, 132; /* accent in r,g,b for rgba() shadows */
+    /* status hero cards — available = brand gradient, busy = hardcoded gradient; themeable.
+       Defaults are Sunset's; nav.js sets --busy-* per theme. */
+    --avail-1: #ff8a5c; --avail-2: #9a5cf0;
+    --busy-1: #3d2b8f;  --busy-2: #5b4acd;
+    --avail-shadow: rgba(224, 90, 132, 0.4);
+    --busy-shadow: rgba(61, 43, 143, 0.42);
+    --free: #20C997;   /* availability/free ONLY — green has one meaning */
+    --color-free: #20C997;  /* alias */
+    --busy: #ffcc33;
+    --offline: #cbbfc8;
+    --text-dark: #241b26;
+    --text-gray: #71636c;
+    --shadow: rgba(224, 90, 132, 0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(160deg, #fff0e8 0%, #fdeaf2 50%, #f0e9ff 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+.phone {
+    position: relative;
+    width: 390px;
+    height: 844px;
+    background: #ccc4cc;
+    border-radius: 58px;
+    padding: 12px;
+    box-shadow: 0 0 0 1.5px rgba(203, 191, 200, 0.55), 0 30px 60px rgba(224, 90, 132, 0.18);
+}
+
+.screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: var(--app-bg);
+    border-radius: 46px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 30px 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+    flex-shrink: 0;
+}
+.status-bar .icons { display: flex; gap: 6px; align-items: center; }
+
+.notch {
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    width: 126px; height: 34px;
+    background: #ccc4cc;
+    border-radius: 0 0 20px 20px;
+    z-index: 20;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 26px 10px;
+    flex-shrink: 0;
+}
+.app-name {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.app-name .bang { -webkit-text-fill-color: var(--accent-2); }
+/* page title variant (Friends, Plans, etc.) */
+.page-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text-dark);
+}
+.gear {
+    width: 42px; height: 42px;
+    border-radius: 14px;
+    background: var(--card-white);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px var(--shadow);
+    cursor: pointer;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+}
+.gear:active { transform: scale(0.92); }
+.gear svg { stroke: var(--accent); }
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 22px 0;
+}
+.content::-webkit-scrollbar { display: none; }
+
+.section-label {
+    font-size: 14px; font-weight: 700;
+    color: var(--text-gray);
+    margin: 24px 4px 12px;
+    letter-spacing: 0.2px;
+}
+
+/* Friend / list rows */
+.friend {
+    background: var(--card-white);
+    border-radius: 20px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 16px rgba(224, 90, 132, 0.06);
+    transition: transform 0.18s;
+}
+.friend:active { transform: scale(0.985); }
+.f-dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+/* plain filled status dots — green=free, yellow=away/in class, gray=busy/offline */
+.f-dot.free { background: var(--free); }
+.f-dot.busy { background: var(--busy); }
+.f-dot.offline { background: var(--offline); }
+.f-info { flex: 1; min-width: 0; }
+.f-name { font-size: 16px; font-weight: 600; color: var(--text-dark); }
+/* static favorite badge next to a friend's name (informational, never intercepts taps) */
+.fav-star { margin-left: 6px; color: #FFC233; font-size: 13px; line-height: 1; vertical-align: 1px; pointer-events: none; }
+.f-loc { font-size: 13px; color: var(--text-gray); margin-top: 1px; }
+.f-timer {
+    font-size: 12px; font-weight: 600;
+    color: var(--free);
+    background: rgba(32, 201, 151,0.1);
+    padding: 5px 10px; border-radius: 10px;
+    flex-shrink: 0;
+}
+.f-timer.away { color: var(--text-gray); background: #f6eef1; }
+
+/* avatar circle (used on Friends / Plings) */
+.avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #fff;
+    background: linear-gradient(140deg, var(--grad-start), var(--grad-end));
+}
+
+/* generic toggle switch (on white cards) */
+.toggle {
+    width: 46px; height: 27px;
+    background: var(--offline);
+    border-radius: 14px;
+    position: relative;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.toggle.on { background: var(--free); }
+.toggle::after {
+    content: '';
+    position: absolute;
+    top: 2.5px; left: 2.5px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.3s cubic-bezier(0.4,1.3,0.5,1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+}
+.toggle.on::after { transform: translateX(19px); }
+
+.bottom-pad { height: 110px; }
+
+/* Bottom nav */
+.nav {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 92px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0,0,0,0.04);
+    display: flex; justify-content: space-around; align-items: flex-start;
+    padding: 14px 12px 0;
+    z-index: 10;
+}
+.nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    color: var(--text-gray);
+    font-size: 10.5px; font-weight: 600;
+    cursor: pointer; flex: 1;
+    transition: color 0.2s;
+    text-decoration: none;
+}
+.nav-item svg { width: 24px; height: 24px; }
+.nav-item.active { color: var(--accent); }
+.nav-item .nav-dot { width: 5px; height: 5px; border-radius: 50%; background: transparent; margin-top: 1px; }
+.nav-item.active .nav-dot { background: var(--accent); }
+
+/* notification badge (red exponent on an icon) */
+.nav-ic { position: relative; display: inline-flex; }
+.nav-badge {
+    position: absolute;
+    top: -6px; right: -9px;
+    min-width: 16px; height: 16px;
+    padding: 0 4px;
+    background: #ff3b30;
+    color: #fff;
+    font-size: 10px; font-weight: 700;
+    line-height: 1;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.92);
+}
+
+.home-bar {
+    position: absolute;
+    bottom: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 134px; height: 5px;
+    background: var(--text-dark);
+    border-radius: 3px;
+    opacity: 0.85;
+    z-index: 15;
+}
+
+.anim { opacity: 0; transform: translateY(12px); animation: rise 0.5s forwards; }
+@keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+/* ---- Sort chip (Home) ---- */
+.sort-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 24px 4px 12px;
+}
+.sort-row .section-label { margin: 0; }
+.sort-chip {
+    position: relative;
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12.5px; font-weight: 700;
+    color: var(--accent);
+    background: rgba(224, 90, 132,0.09);
+    padding: 6px 11px; border-radius: 11px;
+    cursor: pointer; user-select: none;
+    letter-spacing: 0.1px;
+}
+.sort-chip .tri { font-size: 9px; transition: transform 0.2s; }
+.sort-chip.open .tri { transform: rotate(180deg); }
+.sort-menu {
+    position: absolute; top: calc(100% + 6px); right: 0;
+    background: #fff; border-radius: 14px; padding: 6px;
+    box-shadow: 0 12px 32px rgba(224, 90, 132,0.20);
+    z-index: 30; min-width: 158px;
+    display: none;
+}
+.sort-menu.open { display: block; animation: rise 0.18s forwards; }
+.sort-opt {
+    padding: 9px 12px; border-radius: 9px;
+    font-size: 13.5px; font-weight: 600; color: var(--text-dark);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.sort-opt:active { background: rgba(224, 90, 132,0.06); }
+.sort-opt.sel { color: var(--accent); background: rgba(224, 90, 132,0.09); }
+.sort-opt .tick { opacity: 0; font-size: 12px; }
+.sort-opt.sel .tick { opacity: 1; }
+
+/* friend rows become tappable */
+.friend { cursor: pointer; }
+
+/* ---- Profile bottom sheet ---- */
+.sheet-scrim {
+    position: absolute; inset: 0;
+    background: rgba(36, 27, 38,0.42);
+    border-radius: 46px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.32s ease;
+    z-index: 40;
+}
+.sheet-scrim.open { opacity: 1; pointer-events: auto; }
+.sheet {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: var(--app-bg);
+    border-radius: 32px 32px 46px 46px;
+    padding: 8px 22px 30px;
+    max-height: 90%;
+    display: flex; flex-direction: column;   /* scroll region + pinned Pling FAB */
+    transform: translateY(110%);
+    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 41;
+    will-change: transform;
+}
+/* Open uses a CSS animation (not a transition). Transitions on off-screen
+   elements can stall on first-run and never fire (transform sticks at 110%).
+   Animation reliably plays on class change. Closing falls back to the base
+   `transition` rule above so the slide-down still animates.
+   Shadow only applied while OPEN — otherwise the upward shadow of the
+   off-screen (closed) sheets bleeds up into the bottom of the app. */
+.sheet.open {
+    transform: translateY(0);
+    box-shadow: 0 -20px 50px rgba(0,0,0,0.2);
+    animation: sheetSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+@keyframes sheetSlideUp {
+    from { transform: translateY(110%); }
+    to   { transform: translateY(0); }
+}
+.sheet-scroll { flex: 1; min-height: 0; overflow-y: auto; }
+.sheet-scroll::-webkit-scrollbar { display: none; }
+.sheet-handle { width: 40px; height: 5px; border-radius: 3px; background: #ddd1d8; margin: 8px auto 16px; }
+/* favorite star — top-right corner; icon top lines up with the avatar's top edge, equal top/right margins */
+.sheet-fav { position: absolute; top: 30px; right: 30px; z-index: 2; width: 36px; height: 36px; border-radius: 11px; border: 1px solid #ece2e8; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: transform 0.15s, border-color 0.2s; }
+.sheet-fav:active { transform: scale(0.9); }
+.sheet-fav.on { border-color: #f3e2ad; }
+.sheet-fav svg { width: 21px; height: 21px; fill: none; stroke: var(--text-gray); stroke-width: 2; transition: fill 0.2s, stroke 0.2s; }
+.sheet-fav.on svg { fill: #FFC233; stroke: #FFC233; }
+.sheet-fav svg.spin { animation: starPop 0.5s cubic-bezier(0.34, 1.4, 0.5, 1); }
+@keyframes starPop {
+    0%   { transform: scale(1) rotate(0deg); }
+    45%  { transform: scale(1.4) rotate(190deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+.sheet-head { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.sheet-avatar {
+    width: 86px; height: 86px; border-radius: 50%;
+    background: linear-gradient(140deg, var(--grad-start), var(--grad-end));
+    color: #fff; font-size: 30px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 10px 26px rgba(224, 90, 132,0.4);
+}
+.sheet-name { font-size: 23px; font-weight: 800; color: var(--text-dark); margin-top: 12px; letter-spacing: -0.4px; }
+.sheet-status { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 14px; font-weight: 600; color: var(--text-gray); margin-top: 5px; }
+.sheet-status .dot { width: 9px; height: 9px; border-radius: 50%; }
+.sheet-status .dot.free { background: var(--free); }
+.sheet-status .dot.busy { background: var(--busy); }
+.sheet-status .dot.offline { background: var(--offline); }
+.sheet-loc { margin-top: 4px; font-size: 14px; font-weight: 500; color: var(--text-dark); text-align: center; }
+
+/* action buttons: message / call / facetime */
+.sheet-actions { display: flex; justify-content: center; gap: 16px; margin: 22px 0 0; }
+.act { display: flex; flex-direction: column; align-items: center; gap: 7px; cursor: pointer; }
+.act-btn {
+    width: 52px; height: 52px; border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(224, 90, 132,0.12);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s;
+}
+.act:active .act-btn { transform: scale(0.92); }
+.act-btn svg { width: 23px; height: 23px; }
+.act-lbl { display: none; }   /* icon-only — labels removed */
+
+.sheet-section { font-size: 13px; font-weight: 700; color: var(--text-gray); margin: 24px 2px 12px; letter-spacing: 0.3px; }
+
+.info-card {
+    display: flex; align-items: center; gap: 12px;
+    background: #fff; border-radius: 16px; padding: 13px 15px;
+    box-shadow: 0 4px 14px rgba(224, 90, 132,0.05);
+    margin-bottom: 8px;
+}
+.info-card .ic { font-size: 18px; flex-shrink: 0; }
+.info-card .tx { font-size: 14px; font-weight: 500; color: var(--text-dark); }
+
+/* public schedule rows */
+.sched-row {
+    display: flex; align-items: center; gap: 13px;
+    background: #fff; border-radius: 16px; padding: 12px 15px; margin-bottom: 8px;
+    box-shadow: 0 4px 14px rgba(224, 90, 132,0.05);
+}
+.sched-time { font-size: 13px; font-weight: 700; color: var(--text-dark); width: 64px; flex-shrink: 0; }
+.sched-bar { width: 4px; align-self: stretch; border-radius: 2px; background: var(--offline); }
+.sched-bar.free { background: var(--free); }
+.sched-bar.busy { background: var(--busy); }
+.sched-label { font-size: 14px; font-weight: 500; color: var(--text-dark); flex: 1; }
+.sched-tag { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 8px; flex-shrink: 0; }
+.sched-tag.free { color: var(--free); background: rgba(32, 201, 151,0.12); }
+.sched-tag.busy { color: #b8860b; background: rgba(255,204,51,0.2); }
+
+/* ---- inline activity recommendations (profile sheet) ---- */
+.pf-recs-wrap {
+    position: relative;
+    height: 46px;
+    margin: 14px 0 0;
+    flex-shrink: 0;
+}
+.pf-recs, .pf-recs-input {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    gap: 8px;
+    transition: opacity 0.28s ease;
+}
+.pf-recs-input { opacity: 0; pointer-events: none; }
+.pf-recs-wrap.input-mode .pf-recs       { opacity: 0; pointer-events: none; }
+.pf-recs-wrap.input-mode .pf-recs-input { opacity: 1; pointer-events: auto; }
+.pf-rec-chip {
+    flex: 1;
+    padding: 12px 8px;
+    background: #f6eef1;
+    border: none; border-radius: 14px;
+    font-size: 13.5px; font-weight: 700;
+    color: var(--text-dark);
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.2s, color 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.pf-rec-chip:active { transform: scale(0.95); }
+.pf-rec-chip.sel { background: var(--accent); color: #fff; box-shadow: 0 6px 16px rgba(224, 90, 132,0.32); }
+.pf-recs-input input {
+    flex: 1; min-width: 0;
+    width: 100%;
+    border: none; outline: none;
+    background: #f6eef1;
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--text-dark);
+    font-family: inherit;
+    caret-color: var(--accent);
+}
+.pf-recs-input input::placeholder { color: var(--text-gray); }
+
+/* pinned bottom FAB — same treatment as Home "Start a hangout" */
+.sheet-pling {
+    flex-shrink: 0;
+    width: 100%; margin-top: 14px;
+    background: var(--accent);
+    color: #fff; border: none; border-radius: 18px; padding: 16px;
+    font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
+    box-shadow: 0 12px 30px rgba(224, 90, 132,0.5);
+    transition: transform 0.15s;
+}
+.sheet-pling:active { transform: scale(0.98); }
+
+/* weekly availability grid (profile) */
+.wk-grid { display: grid; grid-template-columns: 32px repeat(4, 1fr); gap: 6px; align-items: center; }
+.wk-head { font-size: 9.5px; font-weight: 700; color: var(--text-gray); text-align: center; letter-spacing: 0.3px; }
+.wk-day { font-size: 11.5px; font-weight: 700; color: var(--text-dark); }
+.wk-cell { height: 30px; border-radius: 9px; }
+.wk-cell.busy { background: #f1e7ec; }
+.wk-cell.maybe { background: rgba(255, 204, 51, 0.5); }
+.wk-cell.free { background: var(--free); }
+.wk-legend { display: flex; gap: 16px; justify-content: center; margin-top: 14px; }
+.wk-leg { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: var(--text-gray); }
+.wk-leg .sw { width: 13px; height: 13px; border-radius: 4px; }
+.wk-leg .sw.busy { background: #f1e7ec; }
+.wk-leg .sw.maybe { background: rgba(255, 204, 51, 0.5); }
+.wk-leg .sw.free { background: var(--free); }
+
+/* ---- global notifications (shared notif.js) ---- */
+.header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.bell .nav-ic { position: relative; display: inline-flex; }
+.notif-scrim {
+    position: absolute; inset: 0; background: rgba(36, 27, 38,0.32);
+    border-radius: 46px; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s; z-index: 50;
+}
+.notif-scrim.open { opacity: 1; pointer-events: auto; }
+.notif-card {
+    position: absolute; top: 62px; right: 16px; left: 16px;
+    background: var(--app-bg); border-radius: 22px; padding: 14px;
+    box-shadow: 0 22px 50px rgba(0,0,0,0.22); z-index: 51;
+    transform-origin: top right;
+    transform: translateY(-12px) scale(0.96); opacity: 0; pointer-events: none;
+    transition: transform 0.26s cubic-bezier(0.32,0.72,0,1), opacity 0.26s;
+}
+.notif-card.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
+.notif-head { display: flex; align-items: center; justify-content: space-between; margin: 4px 4px 11px; }
+.notif-head .t { font-size: 13px; font-weight: 800; color: var(--text-gray); letter-spacing: 0.4px; }
+.notif-head .clear { font-size: 12px; font-weight: 700; color: var(--accent); cursor: pointer; }
+.notif-item {
+    display: flex; flex-direction: column;
+    background: #fff; border-radius: 16px; padding: 12px 13px; margin-bottom: 9px;
+    box-shadow: 0 3px 12px rgba(224, 90, 132,0.05);
+}
+.notif-row { display: flex; align-items: center; gap: 12px; }
+.notif-emoji { width: 40px; height: 40px; border-radius: 50%; background: rgba(224, 90, 132,0.1); display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+.notif-info { flex: 1; min-width: 0; }
+.notif-tx { font-size: 13.5px; color: var(--text-dark); line-height: 1.3; }
+.notif-tx b { font-weight: 700; }
+.notif-time { font-size: 11.5px; color: var(--text-gray); margin-top: 2px; }
+.notif-btn { background: var(--accent); color: #fff; border: none; border-radius: 11px; padding: 8px 15px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; flex-shrink: 0; transition: transform 0.15s; }
+.notif-btn:active { transform: scale(0.93); }
+.notif-done { flex-shrink: 0; font-size: 13px; font-weight: 700; color: var(--color-free); background: rgba(32, 201, 151,0.12); padding: 8px 14px; border-radius: 11px; }
+.notif-item.done { opacity: 0.7; }
+.notif-empty { text-align: center; color: var(--text-gray); font-size: 13px; padding: 18px; }
+/* self-contained confirmation toast for ping actions (above the notif card) */
+.notif-toast { position: absolute; left: 24px; right: 24px; bottom: 120px; z-index: 60; background: #241b26; color: #fff; padding: 13px 18px; border-radius: 14px; font-size: 14px; font-weight: 600; text-align: center; box-shadow: 0 12px 30px rgba(0,0,0,0.28); opacity: 0; transform: translateY(10px); transition: opacity 0.25s, transform 0.25s; pointer-events: none; }
+.notif-toast.show { opacity: 1; transform: translateY(0); }
+/* inline quick-reply expansion (pills → custom input) */
+.notif-reply { overflow: hidden; display: flex; align-items: center; gap: 8px; animation: notifExpand 0.28s cubic-bezier(0.32,0.72,0,1) both; }
+@keyframes notifExpand { from { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; } to { max-height: 80px; opacity: 1; padding-top: 12px; margin-top: 0; } }
+.np-pill { background: #f6eef1; border: none; border-radius: 12px; padding: 9px 13px; font-size: 13px; font-weight: 600; color: var(--text-dark); cursor: pointer; font-family: inherit; white-space: nowrap; transition: transform 0.15s; }
+.np-pill:active { transform: scale(0.93); }
+.np-pill.custom { background: rgba(224, 90, 132,0.1); color: var(--accent); }
+.np-input { flex: 1; min-width: 0; border: none; outline: none; background: #f6eef1; border-radius: 12px; padding: 10px 13px; font-size: 13.5px; font-family: inherit; color: var(--text-dark); }
+.np-input::placeholder { color: var(--text-gray); }
+.np-send { flex-shrink: 0; background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.15s; }
+.np-send:active { transform: scale(0.93); }
+
+/* ============================================================
+   REAL MOBILE DEVICE — app fills the screen, no phone frame.
+   Applied via the `pling-mobile` class (set by nav.js only when this
+   page is the top window, not an embed, on a narrow viewport). The
+   marketing-site embeds (?demo=1 / iframes) never get this class.
+   ============================================================ */
+html.pling-mobile,
+html.pling-mobile body {
+    height: 100%;
+    overflow: hidden;              /* disable page scroll + rubber-band */
+    overscroll-behavior: none;
+}
+html.pling-mobile body {
+    padding: 0;
+    display: block;                /* drop the centering flexbox */
+    min-height: 0;
+    background: var(--app-bg);
+}
+html.pling-mobile .phone {
+    width: 100vw;
+    width: 100dvw;
+    height: 100vh;
+    height: 100dvh;                /* fill the viewport, no bezel */
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+}
+html.pling-mobile .screen {
+    border-radius: 0;
+}
+html.pling-mobile .notch {
+    display: none;                 /* no fake notch on a real phone */
+}
+/* the real phone already draws the clock / signal / battery and the home
+   indicator — hide the app's fake ones */
+html.pling-mobile .status-bar,
+html.pling-mobile .home-bar {
+    display: none;
+}
+/* clear the real status bar / notch and home indicator via safe-area insets */
+html.pling-mobile .screen {
+    padding-top: env(safe-area-inset-top);
+}
+/* shift the header right so the fixed back-to-site arrow doesn't cover the logo */
+html.pling-mobile.lp-bts-on .header {
+    padding-left: 70px;
+}
+html.pling-mobile .nav {
+    height: calc(92px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Circles tab segmented control (Friends | Groups) — merges the two into one tab,
+   matching the RN app. Full-width track, white active pill. */
+.circles-seg { display: flex; background: rgba(224, 90, 132, 0.07); border-radius: 20px; padding: 4px; margin: 0 22px 4px; }
+.circles-seg a {
+    flex: 1; text-align: center; padding: 11px 0; border-radius: 16px;
+    font-size: 15px; font-weight: 700; color: var(--text-gray);
+    text-decoration: none; transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.circles-seg a.active { background: #fff; color: var(--accent); box-shadow: 0 4px 12px rgba(224, 90, 132, 0.12); }

@@ -1,0 +1,2363 @@
+/* ============================================================
+   Pling — landing page styles. Standalone marketing site.
+   Separate from styles.css (the app prototype). Tokens mirror it.
+   ============================================================ */
+
+/* ===== base / design system ===== */
+/* ============================================================
+   PLING — landing page design system (shell)
+   Tokens, resets, shared utilities, nav, footer, reveal.
+   Section-specific styles live in their own files (.lp-hero-* etc).
+   ============================================================ */
+
+:root {
+  /* ☀ Warm-sunset theme — coral → violet, warm cream cards, peachy glows. */
+  --lp-accent: #e1457e;          /* warm rose — links, eyebrows, icons (~4.6:1 on cream) */
+  --lp-grad-start: #ff8a5c;      /* coral */
+  --lp-grad-end: #9a5cf0;        /* violet */
+  --lp-free: #22C55E;            /* availability green — semantic, unchanged */
+  --lp-text: #241b26;            /* warm near-black */
+  /* warm gray, ~4.7:1 on cream for WCAG AA on small text */
+  --lp-gray: #71636c;
+  --lp-card: #fffaf6;            /* warm cream card */
+
+  /* derived helpers (safe additions, not in the locked token list) */
+  --lp-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --lp-shadow-sm: 0 4px 14px rgba(224, 90, 132, 0.10);
+  --lp-shadow-md: 0 12px 34px rgba(224, 90, 132, 0.14);
+  --lp-shadow-lg: 0 30px 60px rgba(224, 90, 132, 0.18);
+  --lp-border: rgba(224, 90, 132, 0.12);
+  --lp-radius: 24px;
+  --lp-nav-h: 76px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--lp-nav-h) + 24px);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(160deg, #fff0e8 0%, #fdeaf2 50%, #f0e9ff 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  color: var(--lp-text);
+  line-height: 1.55;
+  /* `clip` (not `hidden`) prevents horizontal scroll WITHOUT turning body into a
+     scroll container — `overflow-x: hidden` forces overflow-y to `auto` per spec,
+     which breaks window scrolling, sticky offsets, and IntersectionObserver. */
+  overflow-x: clip;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+
+/* ----------------------------------------------------------
+   Shared utilities
+   ---------------------------------------------------------- */
+
+.lp-container {
+  width: 100%;
+  max-width: 1340px;
+  margin-inline: auto;
+  padding-inline: clamp(24px, 5vw, 60px);
+}
+
+.lp-section {
+  padding-block: clamp(64px, 9vw, 140px);
+}
+/* Render below-fold sections lazily: the browser skips their layout/paint until
+   they near the viewport. `auto 800px` = placeholder height before first render,
+   then the real size is remembered (no scrollbar jumping). Hero + demo are
+   excluded — the demo iframe's lazy-load/pause logic owns that section. */
+#how, #why, #features, #faq, #join, .lp-footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+/* JS adds .lp-offscreen to the hero when it's scrolled out of view — the
+   decorative infinite animations (device float, chips, pulse dot) stop burning
+   compositor time for the rest of the page. */
+.lp-hero.lp-offscreen * {
+  animation-play-state: paused !important;
+}
+
+.lp-eyebrow {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--lp-accent);
+}
+
+.lp-h2 {
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -1.4px;
+  color: var(--lp-text);
+}
+
+.lp-lead {
+  font-size: clamp(16px, 2.1vw, 20.5px);
+  line-height: 1.6;
+  color: var(--lp-gray);
+  max-width: 56ch;
+}
+
+.lp-card {
+  background: var(--lp-card);
+  border-radius: var(--lp-radius);
+  box-shadow: var(--lp-shadow-md);
+  border: 1px solid var(--lp-border);
+}
+
+.lp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: clamp(16px, 2.4vw, 24px);
+}
+
+/* Buttons */
+.lp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  padding: 13px 24px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: transform 0.4s var(--lp-ease),
+              box-shadow 0.4s var(--lp-ease),
+              background 0.3s var(--lp-ease),
+              opacity 0.3s var(--lp-ease);
+  will-change: transform;
+}
+.lp-btn:focus-visible {
+  outline: 2px solid var(--lp-accent);
+  outline-offset: 3px;
+}
+
+.lp-btn-primary {
+  background: linear-gradient(120deg, var(--lp-grad-start), var(--lp-grad-end));
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(224, 90, 132, 0.32);
+}
+.lp-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(224, 90, 132, 0.40);
+}
+.lp-btn-primary:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 6px 16px rgba(224, 90, 132, 0.30);
+}
+
+.lp-btn-secondary {
+  background: var(--lp-card);
+  color: var(--lp-text);
+  border-color: var(--lp-border);
+  box-shadow: var(--lp-shadow-sm);
+}
+.lp-btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--lp-shadow-md);
+}
+.lp-btn-secondary:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* ----------------------------------------------------------
+   Reveal on scroll
+   ---------------------------------------------------------- */
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s var(--lp-ease), transform 0.7s var(--lp-ease);
+}
+/* promote a layer only while the reveal is pending — keeping will-change on
+   every revealed element forever holds dozens of composited layers in memory */
+.lp-reveal:not(.in) { will-change: opacity, transform; }
+.lp-reveal.in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  /* kill ALL animations/transitions (covers section-scoped keyframes too),
+     but keep reveal content visible */
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .lp-reveal { opacity: 1 !important; transform: none !important; }
+}
+
+/* ----------------------------------------------------------
+   Navigation
+   ---------------------------------------------------------- */
+.lp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(255, 248, 243, 0.72);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  backdrop-filter: saturate(180%) blur(18px);
+  border-bottom: 1px solid rgba(224, 90, 132, 0.08);
+}
+.lp-nav-inner {
+  width: 100%;
+  max-width: 1340px;
+  margin-inline: auto;
+  min-height: var(--lp-nav-h);
+  padding-inline: clamp(24px, 5vw, 60px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lp-nav-brand { display: inline-flex; align-items: center; }
+.lp-nav-mark {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  background: linear-gradient(120deg, var(--lp-accent), #a96cf0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.lp-nav-bang {
+  -webkit-text-fill-color: #a96cf0;
+  color: #a96cf0;
+}
+/* each letter carries its own gradient clip so it can lift + recolor on its own
+   (inline-block children don't inherit the parent's background-clip:text) */
+.lp-nav-mark .lp-ltr {
+  display: inline-block;
+  /* sample each letter's slice of ONE word-wide gradient so it still reads as a
+     continuous sweep at rest (--i 0..4 → 0%..100%) */
+  background: linear-gradient(120deg, var(--lp-accent), #a96cf0);
+  background-size: 500% 100%;
+  background-position: calc(var(--i) * 25%) 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  will-change: transform;
+}
+.lp-nav-mark .lp-nav-bang {
+  background: none;
+  -webkit-text-fill-color: #a96cf0;
+  color: #a96cf0;
+}
+
+.lp-nav-links {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 2.4vw, 30px);
+}
+.lp-nav-link {
+  font-size: 16.5px;
+  font-weight: 600;
+  color: var(--lp-text);
+  opacity: 0.78;
+  transition: opacity 0.3s var(--lp-ease), color 0.3s var(--lp-ease);
+}
+.lp-nav-link:hover { opacity: 1; color: var(--lp-accent); }
+.lp-nav-link:focus-visible {
+  outline: 2px solid var(--lp-accent);
+  outline-offset: 3px;
+  opacity: 1;
+  border-radius: 4px;
+}
+.lp-nav-cta { padding: 12px 24px; font-size: 16px; }
+
+/* hamburger */
+.lp-nav-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--lp-border);
+  border-radius: 14px;
+  background: var(--lp-card);
+  box-shadow: var(--lp-shadow-sm);
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s var(--lp-ease);
+}
+.lp-nav-toggle:active { transform: scale(0.94); }
+.lp-nav-bars {
+  position: relative;
+  width: 20px;
+  height: 14px;
+}
+.lp-nav-bars span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--lp-text);
+  transition: transform 0.4s var(--lp-ease), opacity 0.3s var(--lp-ease);
+}
+.lp-nav-bars span:nth-child(1) { top: 0; }
+.lp-nav-bars span:nth-child(2) { top: 6px; }
+.lp-nav-bars span:nth-child(3) { top: 12px; }
+.lp-nav.open .lp-nav-bars span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.lp-nav.open .lp-nav-bars span:nth-child(2) { opacity: 0; }
+.lp-nav.open .lp-nav-bars span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* ----------------------------------------------------------
+   Footer
+   ---------------------------------------------------------- */
+.lp-footer {
+  margin-top: clamp(40px, 8vw, 96px);
+  padding-block: clamp(40px, 6vw, 64px);
+  border-top: 1px solid rgba(224, 90, 132, 0.10);
+  background: rgba(255, 255, 255, 0.5);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.lp-footer-inner { display: flex; flex-direction: column; gap: 28px; }
+.lp-footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+.lp-footer-mark {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  background: linear-gradient(120deg, var(--lp-accent), #a96cf0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.lp-footer-bang { -webkit-text-fill-color: #a96cf0; color: #a96cf0; }
+.lp-footer-tag {
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--lp-gray);
+  font-weight: 500;
+}
+.lp-footer-osu {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--lp-accent);
+  letter-spacing: 0.2px;
+}
+.lp-footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 26px;
+  align-items: center;
+}
+.lp-footer-link {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--lp-text);
+  opacity: 0.72;
+  transition: opacity 0.3s var(--lp-ease), color 0.3s var(--lp-ease);
+}
+.lp-footer-link:hover { opacity: 1; color: var(--lp-accent); }
+
+/* floating accent-theme picker — bottom-right */
+.lp-theme-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+.lp-theme-toggle {
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, var(--lp-grad-start), var(--lp-grad-end));
+  box-shadow: 0 10px 26px rgba(224, 90, 132, 0.32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s var(--lp-ease), box-shadow 0.2s ease;
+}
+.lp-theme-toggle svg { width: 24px; height: 24px; }
+.lp-theme-toggle:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 14px 30px rgba(224, 90, 132, 0.4); }
+.lp-theme-toggle:active { transform: scale(0.94); }
+.lp-theme-fab.open .lp-theme-toggle { transform: rotate(12deg) scale(1.04); }
+
+.lp-theme-pop {
+  background: var(--lp-card);
+  border: 1px solid var(--lp-border);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: var(--lp-shadow-lg);
+  transform-origin: bottom right;
+  transition: opacity 0.2s var(--lp-ease), transform 0.2s var(--lp-ease);
+}
+.lp-theme-pop[hidden] { display: none; }
+/* animate in/out via the .open flag (kept mounted briefly so the close can animate) */
+.lp-theme-fab:not(.open) .lp-theme-pop { opacity: 0; transform: translateY(8px) scale(0.94); pointer-events: none; }
+.lp-theme-fab.open .lp-theme-pop { opacity: 1; transform: none; }
+.lp-theme-pop-title {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--lp-gray);
+  margin-bottom: 11px;
+}
+.lp-theme-dots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.lp-theme-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: transform 0.16s var(--lp-ease), outline-color 0.16s ease;
+}
+.lp-theme-dot:hover { transform: scale(1.1); }
+.lp-theme-dot.sel { outline-color: var(--lp-accent); }
+
+.lp-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px 24px;
+  flex-wrap: wrap;
+  padding-top: 22px;
+  border-top: 1px solid rgba(224, 90, 132, 0.08);
+}
+.lp-footer-privacy {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+  color: var(--lp-gray);
+  font-weight: 500;
+}
+.lp-footer-privacy strong { color: var(--lp-text); font-weight: 700; }
+.lp-footer-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--lp-free);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.16);
+  flex-shrink: 0;
+}
+.lp-footer-copy {
+  font-size: 13px;
+  color: var(--lp-gray);
+  font-weight: 500;
+}
+
+/* ----------------------------------------------------------
+   Breakpoints
+   ---------------------------------------------------------- */
+@media (max-width: 900px) {
+  .lp-nav-links { gap: 20px; }
+}
+
+@media (max-width: 600px) {
+  :root { --lp-nav-h: 60px; }
+
+  .lp-nav-inner { position: relative; }
+  .lp-nav-toggle { display: inline-flex; }
+
+  .lp-nav-links {
+    position: absolute;
+    top: calc(100% + 1px);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 12px 20px 18px;
+    background: rgba(255, 248, 243, 0.96);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+    backdrop-filter: saturate(180%) blur(18px);
+    border-bottom: 1px solid rgba(224, 90, 132, 0.10);
+    box-shadow: var(--lp-shadow-md);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.35s var(--lp-ease),
+                transform 0.35s var(--lp-ease),
+                visibility 0.35s var(--lp-ease);
+  }
+  .lp-nav.open .lp-nav-links {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+  }
+  .lp-nav-link {
+    padding: 12px 8px;
+    font-size: 16.5px;
+    opacity: 0.9;
+    border-bottom: 1px solid rgba(224, 90, 132, 0.07);
+  }
+  .lp-nav-cta {
+    margin-top: 8px;
+    padding: 14px 20px;
+    font-size: 16px;
+    justify-content: center;
+  }
+
+  .lp-footer-bottom { flex-direction: column; align-items: flex-start; }
+}
+
+/* ===== hero ===== */
+/* ===================== HERO ===================== */
+.lp-hero {
+  position: relative;
+  overflow: hidden;
+  padding-top: clamp(60px, 9vw, 120px);
+  padding-bottom: clamp(80px, 11vw, 160px);
+}
+
+/* soft ambient blobs behind the whole hero */
+.lp-hero::before,
+.lp-hero::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+.lp-hero::before {
+  width: 520px;
+  height: 520px;
+  top: -180px;
+  left: -140px;
+  background: radial-gradient(circle, rgba(255, 138, 92,0.55), transparent 70%);
+}
+.lp-hero::after {
+  width: 460px;
+  height: 460px;
+  bottom: -200px;
+  right: -120px;
+  background: radial-gradient(circle, rgba(154, 92, 240,0.45), transparent 70%);
+}
+
+.lp-hero-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 56px);
+}
+
+/* ---------- copy column ---------- */
+.lp-hero-copy {
+  max-width: 620px;
+}
+
+.lp-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.lp-hero-title {
+  margin: 0 0 22px;
+  font-size: clamp(40px, 6.4vw, 82px);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 800;
+  color: var(--lp-text);
+}
+.lp-hero-title-accent {
+  display: block;
+  background: linear-gradient(110deg, var(--lp-grad-start) 0%, var(--lp-grad-end) 55%, #ef6aa0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.lp-hero-lead {
+  margin: 0 0 34px;
+  max-width: 480px;
+}
+/* promote the best line to a secondary headline above the CTAs */
+.lp-hero-lead-strong {
+  display: block;
+  margin-bottom: 10px;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.3;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--lp-text);
+}
+
+.lp-hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 26px;
+}
+.lp-hero-btn {
+  font-size: 16px;
+  font-weight: 650;
+  padding: 16px 28px;
+  border-radius: 18px;
+}
+.lp-hero-btn.lp-btn-primary {
+  box-shadow: 0 14px 30px rgba(224, 90, 132, 0.34);
+}
+.lp-hero-btn .lp-hero-btn-arrow {
+  margin-left: 8px;
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  vertical-align: -2px;
+}
+.lp-hero-btn:hover .lp-hero-btn-arrow {
+  transform: translateX(4px);
+}
+
+.lp-hero-trust {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--lp-gray);
+}
+.lp-hero-trust-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--lp-free);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+  animation: lp-hero-pulse 2.4s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+}
+@keyframes lp-hero-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18); }
+  50%      { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0.05); }
+}
+
+/* ---------- visual / device column ---------- */
+.lp-hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: clamp(8px, 2.5vw, 36px);
+}
+
+.lp-hero-glow {
+  position: absolute;
+  width: 88%;
+  height: 88%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 138, 92,0.40), transparent 68%);
+  filter: blur(46px);
+  z-index: 0;
+}
+
+/* device bezel — matches prototype phone radii (58px outer / 46px inner) */
+.lp-hero-device {
+  position: relative;
+  z-index: 1;
+  width: clamp(260px, 28vw, 340px);
+  /* height auto-wraps the screen (which carries the 390:844 aspect) so the
+     embedded app fills it exactly — no bottom gap, no side crop. */
+  padding: 11px;
+  border-radius: 54px;
+  background: linear-gradient(160deg, #e3d8dd 0%, #ccc4cc 50%, #c5bbc3 100%);
+  box-shadow:
+    0 0 0 1.5px rgba(203, 191, 200, 0.55),
+    0 2px 4px rgba(255, 255, 255, 0.7) inset,
+    0 40px 80px rgba(224, 90, 132, 0.30),
+    0 14px 32px rgba(224, 90, 132, 0.18);
+  animation: lp-hero-float 7s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+}
+@keyframes lp-hero-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+
+.lp-hero-device-notch {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34%;
+  height: 26px;
+  /* same gray as the phone bezel */
+  background: #ccc4cc;
+  border-radius: 0 0 16px 16px;
+  z-index: 3;
+}
+
+.lp-hero-device-screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 390 / 844;   /* drives device height; matches the embedded app */
+  border-radius: 44px;
+  overflow: hidden;
+  background: var(--app-bg, #fbeef1);
+}
+
+/* hero.html self-scales the app to fit, so this just fills the frame */
+.lp-hero-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+}
+/* transparent shield — blocks clicks/scroll INTO the embedded app; the page
+   still scrolls past it (no wheel handler). Belt-and-suspenders with the
+   iframe's pointer-events:none. */
+.lp-hero-shield,
+.lp-demo-shield {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: transparent;
+  cursor: default;
+}
+/* easter egg: click the nav "Pling!" logo → each letter jumps in sequence,
+   cycling the sunset accent colors. Bang lands last with a bigger pop + scale.
+   Stagger 80ms · letters 0.28s · bang 0.29s → bang ends ~690ms (< 700ms). */
+@keyframes plingJump {
+  0%   { transform: translateY(0);    -webkit-text-fill-color: transparent; }
+  30%  { -webkit-text-fill-color: var(--lp-grad-start); }
+  50%  { transform: translateY(-9px); -webkit-text-fill-color: var(--lp-accent); }
+  72%  { -webkit-text-fill-color: var(--lp-grad-end); }
+  100% { transform: translateY(0);    -webkit-text-fill-color: transparent; }
+}
+@keyframes plingBang {
+  0%   { transform: translateY(0) scale(1);       -webkit-text-fill-color: #a96cf0; }
+  45%  { transform: translateY(-13px) scale(1.3); -webkit-text-fill-color: var(--lp-accent); }
+  72%  { -webkit-text-fill-color: var(--lp-grad-end); }
+  100% { transform: translateY(0) scale(1);       -webkit-text-fill-color: #a96cf0; }
+}
+.lp-nav-mark.lp-jump .lp-ltr   { animation: plingJump 0.28s ease-in-out; animation-delay: calc(var(--i) * 80ms); }
+.lp-nav-mark.lp-jump .lp-nav-bang { animation: plingBang 0.29s ease-in-out; animation-delay: calc(var(--i) * 80ms); }
+
+/* ---------- "Watch it move" play overlay (mobile only) ----------
+   Desktop autoplays the tour, so this is hidden there. On mobile the frame
+   loads a static screen and this button swaps in the animation on tap. */
+.lp-hero-play {
+  display: none;   /* shown only at mobile widths (see responsive block) */
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 9px;
+  padding: 11px 18px 11px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 28px rgba(224, 90, 132, 0.28);
+  color: var(--lp-accent);
+  font-weight: 700;
+  font-size: 14.5px;
+  letter-spacing: -0.2px;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.18s var(--lp-ease), box-shadow 0.2s var(--lp-ease);
+}
+.lp-hero-play:active { transform: translateX(-50%) scale(0.96); }
+.lp-hero-play-ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--lp-grad-start), #a96cf0);
+  color: #fff;
+}
+.lp-hero-play-ic svg { width: 13px; height: 13px; margin-left: 1px; }
+/* once played, drop the overlay for good */
+.lp-played .lp-hero-play { display: none !important; }
+
+/* show the play overlay only where the static mobile source loads (≤768px) */
+@media (max-width: 768px) {
+  .lp-hero-play { display: inline-flex; }
+  .lp-played .lp-hero-play { display: none !important; }
+}
+
+/* ---------- floating glass chips ---------- */
+.lp-hero-chip {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 16px;
+  /* solid translucent (no backdrop-filter) — these float OVER the animating
+     phone, so a backdrop blur would re-rasterize every frame. */
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  box-shadow: 0 18px 40px rgba(224, 90, 132, 0.22);
+}
+
+.lp-hero-chip-free {
+  left: -10px;
+  top: 16%;
+  transform: scale(0.92);
+  animation: lp-hero-float-chip 6s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+}
+.lp-hero-chip-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--lp-free);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.16);
+  flex-shrink: 0;
+}
+.lp-hero-chip-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.lp-hero-chip-text strong {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--lp-text);
+}
+.lp-hero-chip-text span {
+  font-size: 12px;
+  color: var(--lp-gray);
+  font-weight: 500;
+}
+
+.lp-hero-chip-timer {
+  right: -10px;
+  bottom: 14%;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 13px 18px;
+  transform: scale(0.92);
+  animation: lp-hero-float-chip 6.6s cubic-bezier(0.32, 0.72, 0, 1) infinite 0.6s;
+}
+.lp-hero-chip-timer-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lp-gray);
+}
+.lp-hero-chip-timer-count {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(110deg, var(--lp-grad-start), var(--lp-grad-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+@keyframes lp-hero-float-chip {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+
+/* ---------- reveal animation ---------- */
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  animation: lp-hero-reveal 0.9s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+.lp-hero-copy .lp-reveal:nth-child(1) { animation-delay: 0.05s; }
+.lp-hero-copy .lp-reveal:nth-child(2) { animation-delay: 0.13s; }
+.lp-hero-copy .lp-reveal:nth-child(3) { animation-delay: 0.21s; }
+.lp-hero-copy .lp-reveal:nth-child(4) { animation-delay: 0.29s; }
+.lp-hero-copy .lp-reveal:nth-child(5) { animation-delay: 0.37s; }
+.lp-hero-visual.lp-reveal { animation-delay: 0.24s; }
+
+@keyframes lp-hero-reveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===================== RESPONSIVE ===================== */
+@media (max-width: 900px) {
+  .lp-hero-inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: clamp(40px, 8vw, 56px);
+  }
+  .lp-hero-copy {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .lp-hero-lead {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .lp-hero-cta,
+  .lp-hero-trust {
+    justify-content: center;
+  }
+  /* restore centering when stacked */
+  .lp-hero-visual {
+    justify-content: center;
+    padding-right: 0;
+  }
+  .lp-hero-device {
+    width: clamp(230px, 46vw, 280px);
+  }
+  /* iframe scale handled by JS (fitEmbeddedDemos) */
+  .lp-hero-chip-free  { left: -6px; }
+  .lp-hero-chip-timer { right: -6px; }
+}
+
+@media (max-width: 600px) {
+  /* First screen = hero copy only; the phone animation lives on its own full
+     screen directly below and never peeks above the fold. The sticky nav sits
+     in flow, so copy fills exactly the viewport minus the nav. */
+  .lp-section.lp-hero {
+    justify-content: flex-start;   /* don't vertically center the whole stack */
+    padding-block: 0;              /* compound selector beats the generic .lp-section reset */
+  }
+  .lp-hero-inner {
+    gap: 0;                        /* phone starts exactly at the next screen */
+    align-items: stretch;
+  }
+  .lp-hero-copy {
+    min-height: calc(100dvh - var(--lp-nav-h));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 24px;
+    box-sizing: border-box;
+  }
+  .lp-hero-visual {
+    min-height: 100dvh;
+    padding: 0;
+    scroll-snap-align: start;      /* scrolling snaps cleanly onto the phone */
+  }
+
+  .lp-hero-title {
+    font-size: clamp(36px, 11vw, 50px);
+  }
+  .lp-hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .lp-hero-btn {
+    justify-content: center;
+    text-align: center;
+  }
+  .lp-hero-device {
+    width: min(66vw, 250px);
+  }
+  /* iframe scale handled by JS (fitEmbeddedDemos) */
+  /* tuck chips closer / smaller on tiny screens */
+  .lp-hero-chip-free {
+    left: -10px;
+    top: 14%;
+    padding: 10px 13px;
+  }
+  .lp-hero-chip-timer {
+    right: -10px;
+    bottom: 12%;
+    padding: 11px 14px;
+  }
+  .lp-hero-chip-text strong { font-size: 12.5px; }
+  .lp-hero-chip-text span   { font-size: 11px; }
+  .lp-hero-chip-timer-count { font-size: 19px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-hero-device,
+  .lp-hero-chip,
+  .lp-hero-trust-dot { animation: none; }
+  .lp-reveal {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+/* ===== how ===== */
+.lp-how {
+  position: relative;
+}
+
+.lp-how-head {
+  max-width: 640px;
+  margin: 0 auto 56px;
+  text-align: center;
+}
+
+.lp-how-head .lp-lead {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ---- 3-up grid ---- */
+.lp-how-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  counter-reset: how;
+}
+/* two big use-case cards */
+.lp-how-grid--two {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 26px;
+  max-width: 940px;
+  margin: 0 auto;
+}
+.lp-how-grid--two .lp-how-card { padding: 34px 32px 30px; }
+
+/* day tag (replaces the number badge for use-case cards) */
+.lp-how-day {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--lp-accent);
+  background: rgba(224, 90, 132, 0.10);
+  border: 1px solid rgba(224, 90, 132, 0.14);
+}
+
+/* checklist of what Pling automates */
+.lp-how-points {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.lp-how-points li {
+  position: relative;
+  padding-left: 28px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--lp-text);
+  font-weight: 500;
+}
+.lp-how-points li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  /* white check (top layer) over a gradient circle (bottom layer) */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round' d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center / 62% no-repeat,
+    linear-gradient(150deg, var(--lp-grad-start), var(--lp-grad-end));
+  box-shadow: 0 4px 10px -3px rgba(224, 90, 132, 0.6);
+}
+.lp-how-points li em { font-style: normal; color: var(--lp-accent); font-weight: 700; }
+
+.lp-how-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 30px 28px 28px;
+  overflow: hidden;
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+              box-shadow 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.lp-how-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--lp-grad-start), var(--lp-grad-end));
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+              transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.lp-how-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 48px -16px rgba(224, 90, 132, 0.32);
+}
+
+.lp-how-card:hover::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* ---- top row: number + icon ---- */
+.lp-how-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 22px;
+}
+
+.lp-how-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(150deg, var(--lp-grad-start), var(--lp-grad-end));
+  box-shadow: 0 10px 22px -8px rgba(224, 90, 132, 0.65);
+  letter-spacing: -0.01em;
+}
+
+/* icon badge (outline icon in brand purple) */
+.lp-how-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  color: var(--lp-accent);
+  background: linear-gradient(150deg, rgba(255, 138, 92, 0.16), rgba(154, 92, 240, 0.08));
+  box-shadow: inset 0 0 0 1px rgba(255, 138, 92, 0.18);
+}
+.lp-how-icon svg { width: 24px; height: 24px; }
+
+/* ---- text ---- */
+.lp-how-title {
+  margin: 0 0 10px;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--lp-text);
+}
+
+.lp-how-line {
+  margin: 0 0 22px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--lp-gray);
+}
+
+/* ---- bottom badge — subtle, NON-button (informational only) ---- */
+.lp-how-badge {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lp-gray);
+}
+/* checkmark reads as a confirmation moment, not a bullet — filled gradient disc */
+.lp-how-badge svg {
+  width: 28px; height: 28px; padding: 6px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--lp-grad-start), var(--lp-grad-end));
+  border-radius: 50%;
+  box-shadow: 0 5px 14px rgba(224, 90, 132, 0.32);
+  flex-shrink: 0;
+}
+.lp-how-bdot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--lp-free);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.16);
+  flex-shrink: 0;
+}
+
+/* ---- legacy pill (kept for safety; unused) ---- */
+.lp-how-pill {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 15px 9px 13px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--lp-text);
+  background: rgba(224, 90, 132, 0.08);
+  border: 1px solid rgba(224, 90, 132, 0.12);
+}
+
+.lp-how-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--lp-free);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.18);
+}
+
+.lp-how-pill--place {
+  background: rgba(255, 138, 92, 0.1);
+  border-color: rgba(255, 138, 92, 0.16);
+}
+
+.lp-how-pin {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ---- avatar stack on card 2 ---- */
+.lp-how-pill--ghost {
+  padding-left: 9px;
+}
+
+.lp-how-avatars {
+  display: inline-flex;
+}
+
+.lp-how-av {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: -8px;
+  border-radius: 50%;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: linear-gradient(150deg, var(--lp-grad-start), var(--lp-grad-end));
+  border: 2px solid var(--lp-card);
+}
+
+.lp-how-av:last-child {
+  margin-right: 6px;
+}
+
+/* ---- reveal-on-scroll stagger ---- */
+.lp-how-grid .lp-reveal:nth-child(2) {
+  transition-delay: 0.08s;
+}
+
+.lp-how-grid .lp-reveal:nth-child(3) {
+  transition-delay: 0.16s;
+}
+
+/* ---- responsive ---- */
+@media (max-width: 900px) {
+  .lp-how-grid,
+  .lp-how-grid--two {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .lp-how-head {
+    margin-bottom: 40px;
+  }
+
+  .lp-how-grid .lp-reveal:nth-child(2),
+  .lp-how-grid .lp-reveal:nth-child(3) {
+    transition-delay: 0s;
+  }
+}
+
+@media (max-width: 600px) {
+  .lp-how-card {
+    padding: 26px 22px 24px;
+  }
+
+  .lp-how-num {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    font-size: 18px;
+  }
+
+  .lp-how-icon {
+    font-size: 27px;
+  }
+
+  .lp-how-title {
+    font-size: 19.5px;
+  }
+
+  .lp-how-line {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-how-card,
+  .lp-how-card::before {
+    transition: none;
+  }
+  .lp-how-card:hover {
+    transform: none;
+  }
+}
+
+/* ===== features ===== */
+.lp-feat-head {
+  max-width: 640px;
+  margin: 0 auto 3.25rem;
+  text-align: center;
+}
+
+.lp-feat-head .lp-h2 {
+  margin: 0.5rem 0 1rem;
+}
+
+.lp-feat-head .lp-lead {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lp-feat-grid {
+  --lp-feat-min: 320px;
+}
+
+.lp-feat-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 2rem 1.875rem 2.125rem;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+              box-shadow 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.lp-feat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--lp-grad-start), var(--lp-grad-end));
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: left center;
+  transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+              transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  z-index: 2;
+}
+
+.lp-feat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 24px 50px -18px rgba(224, 90, 132, 0.45);
+}
+
+.lp-feat-card:hover::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.lp-feat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 1.25rem;
+  line-height: 1;
+  border-radius: 18px;
+  color: var(--lp-accent);
+  background: linear-gradient(150deg, rgba(255, 138, 92, 0.16), rgba(154, 92, 240, 0.08));
+  box-shadow: inset 0 0 0 1px rgba(255, 138, 92, 0.18);
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.lp-feat-icon svg { width: 27px; height: 27px; }
+
+.lp-feat-card:hover .lp-feat-icon {
+  transform: translateY(-2px) scale(1.04) rotate(-3deg);
+}
+
+.lp-feat-title {
+  margin: 0 0 0.55rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--lp-text);
+}
+
+.lp-feat-body {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--lp-gray);
+}
+
+.lp-feat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--lp-text);
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.22);
+}
+
+.lp-feat-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--lp-free);
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+  animation: lp-feat-pulse 2.4s cubic-bezier(0.32, 0.72, 0, 1) infinite;
+}
+
+@keyframes lp-feat-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+@media (max-width: 900px) {
+  .lp-feat-head {
+    margin-bottom: 2.5rem;
+  }
+  .lp-feat-grid {
+    --lp-feat-min: 280px;
+  }
+}
+
+@media (max-width: 600px) {
+  .lp-feat-head {
+    text-align: left;
+  }
+  .lp-feat-head .lp-lead {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .lp-feat-card {
+    padding: 1.75rem 1.5rem 1.875rem;
+  }
+  .lp-feat-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.45rem;
+    margin-bottom: 1.05rem;
+  }
+  .lp-feat-title {
+    font-size: 1.12rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-feat-card,
+  .lp-feat-card::before,
+  .lp-feat-icon {
+    transition: none;
+  }
+  .lp-feat-card:hover {
+    transform: none;
+  }
+  .lp-feat-dot {
+    animation: none;
+  }
+}
+
+/* ===== demo ===== */
+/* ============================================================
+   DEMO SHOWCASE — section id="demo"
+   All section-scoped styles use the .lp-demo-* prefix.
+   Shared utilities (.lp-container/.lp-section/.lp-eyebrow/
+   .lp-h2/.lp-lead/.lp-lazy/.lp-reveal) are NOT redefined.
+   ============================================================ */
+
+.lp-demo {
+  text-align: center;
+  overflow: hidden; /* contain the glow */
+}
+
+.lp-demo-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lp-demo-eyebrow {
+  justify-content: center;
+}
+
+.lp-demo-lead {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ---- Stage: holds the glow + the device, centered ---- */
+.lp-demo-stage {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Soft gradient glow blooming behind the phone */
+.lp-demo-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 560px;
+  height: 560px;
+  max-width: 100vw;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(circle at 38% 34%, rgba(255, 138, 92, 0.55), transparent 62%),
+    radial-gradient(circle at 70% 72%, rgba(154, 92, 240, 0.40), transparent 60%);
+  filter: blur(64px);
+  opacity: 0.8;
+  z-index: 0;
+  pointer-events: none;
+  /* static — animating a 560px blur(64px) surface every frame was a major CPU sink */
+}
+
+/* ---- Landscape screen frame ----
+   The demo is a full-bleed TWO-phone stage, so it needs a wide frame, not a
+   portrait phone. Render demo.html at a fixed 1100x850 and scale it to fit. */
+/* Seamless: no heavy bezel. demo.html's gradient bg matches the page, so the
+   walkthrough looks like it floats inside a soft rounded card. */
+/* borderless — just the demo, floating on the page (its gradient bg matches) */
+.lp-demo-device {
+  position: relative;
+  z-index: 1;
+  width: min(92vw, 1000px);
+  aspect-ratio: 1100 / 850;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+/* The screen that holds the iframe (device clips to the rounded corners).
+   Transparent so the page's fixed-attachment gradient shows straight through
+   (the iframe's bg is transparent when embedded) — perfectly seamless, no seam
+   from a second gradient anchored to this smaller box. */
+.lp-demo-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* iframe rendered at native 1100x850; scale set by JS (fitEmbeddedDemos) */
+.lp-demo-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1100px;
+  height: 850px;
+  border: 0;
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+/* text block now lives UNDER the device */
+.lp-demo-textblock {
+  margin-bottom: 38px;   /* text + buttons sit above the phone now */
+  max-width: 560px;
+}
+.lp-demo .lp-h2 {
+  font-size: clamp(23px, 3.2vw, 32px);
+  letter-spacing: -0.8px;
+}
+.lp-demo-lead {
+  font-size: clamp(14.5px, 1.7vw, 16px);
+  max-width: 540px;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* two equal-weight CTAs side by side — neither is primary */
+.lp-demo-cta-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+.lp-demo-cta {
+  flex: 1 1 0;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 15px 26px;
+  border-radius: 16px;
+  /* stand out: clean card with an accent outline + accent label + accent glow —
+     pops without going full-gradient. Single theme accent, both equal weight. */
+  background: var(--lp-card);
+  color: var(--lp-accent);
+  border: 1.5px solid var(--lp-accent);
+  box-shadow: var(--lp-shadow-md);
+}
+.lp-demo-cta:hover { transform: translateY(-2px); box-shadow: var(--lp-shadow-lg); }
+.lp-demo-cta:active { transform: translateY(0) scale(0.98); }
+.lp-demo-cta .lp-hero-btn-arrow {
+  margin-left: 6px;
+  vertical-align: -2px;
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.lp-demo-cta:hover .lp-hero-btn-arrow { transform: translateX(4px); }
+
+.lp-demo-caption {
+  margin: 12px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--lp-gray);
+  letter-spacing: 0.01em;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+  .lp-demo-glow { width: 460px; height: 460px; filter: blur(54px); }
+}
+
+@media (max-width: 600px) {
+  .lp-demo-glow { width: 360px; height: 360px; filter: blur(46px); opacity: 0.78; }
+  .lp-demo-textblock { margin-bottom: 26px; }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .lp-demo-glow { animation: none; }
+}
+
+/* ===== why ===== */
+/* ============================================================
+   WHY-NARROW / values section  —  scoped .lp-why-*  only.
+   Uses shared utilities (.lp-section/.lp-container/.lp-eyebrow/
+   .lp-h2/.lp-lead/.lp-card/.lp-reveal) — never redefined here.
+   ============================================================ */
+
+.lp-why-head {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* card grid — anti-features as quiet, equal tiles */
+.lp-why-grid {
+  list-style: none;
+  margin: 48px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* the "we don't do X" card: intentionally calmer than a feature card */
+.lp-why-card {
+  position: relative;
+  padding: 30px 26px 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, var(--lp-card) 60%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+  transition:
+    transform 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    box-shadow 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* faint diagonal strike across the whole tile = "crossed off" feel */
+.lp-why-card::after {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(113, 99, 108, 0) 0%,
+    rgba(113, 99, 108, 0.28) 50%,
+    rgba(113, 99, 108, 0) 100%
+  );
+  transform: rotate(-4deg);
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+  pointer-events: none;
+}
+
+.lp-why-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px -16px rgba(224, 90, 132, 0.32);
+}
+.lp-why-card:hover::after {
+  opacity: 1;
+}
+
+/* small quiet pill tag */
+.lp-why-tag {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lp-gray);
+  background: rgba(113, 99, 108, 0.12);
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+
+/* the skipped anti-feature name — plain bold title */
+.lp-why-no {
+  margin: 2px 0 0;
+  font-size: 21px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--lp-text);
+}
+
+/* the warm "why we skipped it" line — this is the real text, full color */
+.lp-why-why em { font-style: normal; font-weight: 700; color: var(--lp-accent); }
+.lp-why-why {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--lp-text);
+}
+
+/* closing reassurance line */
+.lp-why-foot {
+  margin: 40px auto 0;
+  max-width: 580px;
+  text-align: center;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--lp-text);
+}
+.lp-why-foot strong {
+  color: var(--lp-accent);
+  font-weight: 700;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px) {
+  .lp-why-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 40px;
+  }
+}
+
+@media (max-width: 600px) {
+  .lp-why-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .lp-why-card {
+    padding: 26px 22px 24px;
+  }
+  .lp-why-no {
+    font-size: 20px;
+  }
+  .lp-why-foot {
+    font-size: 16px;
+    margin-top: 34px;
+  }
+}
+
+/* ===== faq ===== */
+.lp-faq {
+  position: relative;
+}
+
+.lp-faq-head {
+  max-width: 720px;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+
+.lp-faq-head .lp-eyebrow {
+  display: inline-block;
+}
+
+.lp-faq-list {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lp-faq-item {
+  background: var(--lp-card);
+  border-radius: 24px;
+  border: 1px solid var(--lp-border);
+  box-shadow: 0 10px 30px -16px rgba(224, 90, 132, 0.28);
+  overflow: hidden;
+  transition: box-shadow 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+              border-color 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+              transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.lp-faq-item:hover {
+  border-color: rgba(224, 90, 132, 0.24);
+  box-shadow: 0 16px 38px -16px rgba(224, 90, 132, 0.34);
+}
+
+.lp-faq-item.open {
+  border-color: rgba(224, 90, 132, 0.30);
+  box-shadow: 0 20px 46px -18px rgba(224, 90, 132, 0.40);
+}
+
+.lp-faq-q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px 26px;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--lp-text);
+  cursor: pointer;
+  transition: color 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lp-faq-item.open .lp-faq-q,
+.lp-faq-q:hover {
+  color: var(--lp-accent);
+}
+
+.lp-faq-ic {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, var(--lp-grad-start) 0%, var(--lp-grad-end) 100%);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+  box-shadow: 0 6px 14px -6px rgba(224, 90, 132, 0.55);
+  transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.lp-faq-item.open .lp-faq-ic {
+  transform: rotate(135deg);
+}
+
+.lp-faq-a {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.55s cubic-bezier(0.32, 0.72, 0, 1),
+              opacity 0.45s cubic-bezier(0.32, 0.72, 0, 1),
+              padding 0.55s cubic-bezier(0.32, 0.72, 0, 1);
+  padding: 0 26px;
+}
+
+.lp-faq-item.open .lp-faq-a {
+  max-height: 360px;
+  opacity: 1;
+  padding: 0 26px 26px;
+}
+
+.lp-faq-a p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--lp-gray);
+}
+
+.lp-faq-a strong {
+  color: var(--lp-text);
+  font-weight: 600;
+}
+
+.lp-faq-a em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--lp-accent);
+}
+
+@media (max-width: 900px) {
+  .lp-faq-head {
+    margin-bottom: 40px;
+  }
+}
+
+@media (max-width: 600px) {
+  .lp-faq-list {
+    gap: 12px;
+  }
+
+  .lp-faq-q {
+    padding: 20px 20px;
+    font-size: 16.5px;
+    gap: 14px;
+  }
+
+  .lp-faq-ic {
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+  }
+
+  .lp-faq-a {
+    padding: 0 20px;
+  }
+
+  .lp-faq-item.open .lp-faq-a {
+    max-height: 420px;
+    padding: 0 20px 22px;
+  }
+
+  .lp-faq-a p {
+    font-size: 15.5px;
+  }
+}
+
+/* ===== signup ===== */
+.lp-join {
+  position: relative;
+}
+
+.lp-join-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 32px;
+  padding: clamp(40px, 7vw, 88px) clamp(24px, 6vw, 80px);
+  text-align: center;
+  background:
+    radial-gradient(120% 140% at 12% 0%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 55%),
+    linear-gradient(135deg, var(--lp-grad-start) 0%, var(--lp-grad-end) 58%, var(--lp-accent) 100%);
+  box-shadow:
+    0 30px 70px -28px rgba(224, 90, 132, 0.65),
+    0 8px 24px -12px rgba(224, 90, 132, 0.45);
+  isolation: isolate;
+}
+
+.lp-join-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+/* Decorative light + orbs */
+.lp-join-glow {
+  position: absolute;
+  inset: -40% -10% auto -10%;
+  height: 70%;
+  background: radial-gradient(60% 80% at 50% 0%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 70%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.lp-join-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(2px);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.lp-join-orb-a {
+  width: 280px;
+  height: 280px;
+  top: -120px;
+  right: -80px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 233, 243, 0.55), rgba(255, 233, 243, 0) 70%);
+}
+
+.lp-join-orb-b {
+  width: 240px;
+  height: 240px;
+  bottom: -110px;
+  left: -70px;
+  background: radial-gradient(circle at 60% 40%, rgba(255, 238, 228, 0.5), rgba(255, 238, 228, 0) 70%);
+}
+
+/* Typography overrides scoped to the panel (sit on gradient) */
+.lp-join-eyebrow {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.16);
+  padding: 7px 16px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.lp-join-h2 {
+  color: #ffffff;
+  margin: 18px 0 0;
+}
+
+.lp-join-lead {
+  color: rgba(255, 255, 255, 0.9);
+  margin: 16px auto 0;
+  max-width: 560px;
+}
+
+/* Form */
+.lp-join-form {
+  display: flex;
+  gap: 10px;
+  margin: 34px auto 0;
+  max-width: 520px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 22px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: box-shadow 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+              background 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.lp-join-form:focus-within {
+  background: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18);
+}
+
+.lp-join-field {
+  flex: 1 1 auto;
+  display: block;
+  min-width: 0;
+}
+
+.lp-join-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.lp-join-input {
+  width: 100%;
+  height: 56px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 16px;
+  background: var(--lp-card);
+  color: var(--lp-text);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  outline: none;
+  box-shadow: 0 4px 14px -6px rgba(36, 27, 38, 0.25);
+  transition: box-shadow 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.lp-join-input::placeholder {
+  color: var(--lp-gray);
+  font-weight: 500;
+}
+
+.lp-join-input:focus {
+  box-shadow: 0 6px 20px -6px rgba(36, 27, 38, 0.3);
+}
+.lp-join-input:focus-visible {
+  outline: 2px solid var(--lp-accent);
+  outline-offset: 3px;
+}
+
+.lp-join-btn {
+  flex: 0 0 auto;
+  height: 56px;
+  padding: 0 28px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  background: #ffffff;
+  color: var(--lp-accent);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 22px -8px rgba(36, 27, 38, 0.4);
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+              box-shadow 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+              background 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.lp-join-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -10px rgba(36, 27, 38, 0.5);
+}
+
+.lp-join-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px -8px rgba(36, 27, 38, 0.45);
+}
+
+/* Success state */
+.lp-join-success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 34px auto 0;
+  max-width: 520px;
+  padding: 20px 24px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 30px -12px rgba(36, 27, 38, 0.35);
+  animation: lp-join-pop 0.6s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.lp-join-success[hidden] {
+  display: none;
+}
+
+.lp-join-success-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--lp-free);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 4px 12px -3px rgba(34, 197, 94, 0.6);
+}
+
+.lp-join-success-text {
+  color: var(--lp-text);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: left;
+}
+
+@keyframes lp-join-pop {
+  0% { opacity: 0; transform: translateY(10px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Fine print */
+.lp-join-error {
+  margin: 14px 0 0;
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgba(255, 90, 90, 0.2);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+/* the `hidden` attribute must win over the inline-block above */
+.lp-join-error[hidden] { display: none; }
+
+.lp-join-fineprint {
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .lp-join-panel {
+    border-radius: 28px;
+  }
+
+  .lp-join-form {
+    flex-direction: column;
+    gap: 8px;
+    border-radius: 20px;
+  }
+
+  .lp-join-btn {
+    width: 100%;
+    padding: 0 24px;
+  }
+
+  .lp-join-success {
+    flex-direction: row;
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-join-form,
+  .lp-join-input,
+  .lp-join-btn,
+  .lp-join-btn:hover,
+  .lp-join-success {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ===================== LARGE SCREENS =====================
+   Nudge the fixed-size body copy + rem base up a notch so the page
+   reads bigger and more generous on wide monitors. Fluid headings,
+   leads, hero, and section spacing already grow via their clamp
+   ceilings (raised separately); this catches the px/rem text. */
+@media (min-width: 1440px) {
+  html { font-size: 17px; }          /* scales rem-based text (feature cards) */
+  .lp-how-title  { font-size: 23px; }
+  .lp-why-no     { font-size: 23px; }
+  .lp-why-why    { font-size: 16.5px; }
+  .lp-why-foot   { font-size: 18.5px; }
+  .lp-faq-q      { font-size: 19.5px; }
+  .lp-faq-a p    { font-size: 17.5px; }
+  .lp-nav-mark   { font-size: 31px; }
+  .lp-nav-link   { font-size: 17.5px; }
+  .lp-nav-cta    { font-size: 17px; padding: 13px 26px; }
+  .lp-btn        { font-size: 16.5px; }
+}
+
+/* ===================== MOBILE POLISH =====================
+   Open the phone layout up: roomier side gutters so big type doesn't hug
+   the edges, more vertical rhythm between sections, lighter heading weight
+   per line, and generous, even spacing between stacked cards. This block is
+   last in the cascade so it refines the per-section ≤600px rules above. */
+@media (max-width: 600px) {
+  /* breathing room on the sides */
+  .lp-container { padding-inline: 30px; }
+
+  /* the second phone demo is too small to read on a phone — drop it.
+     (display:none also stops its iframe from ever lazy-loading.) */
+  #demo { display: none; }
+
+  /* each section fills the screen and centers its content → a clean
+     page-by-page feel when scrolling on a phone. Sections taller than one
+     screen (features, faq) simply grow and flow normally. */
+  html { scroll-snap-type: y proximity; }
+  .lp-section {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 56px;
+    scroll-snap-align: start;
+  }
+
+  /* headings read open, not heavy: a touch smaller + looser leading */
+  .lp-h2 {
+    font-size: 27px;
+    line-height: 1.18;
+    letter-spacing: -0.6px;
+  }
+  .lp-lead {
+    font-size: 16.5px;
+    line-height: 1.66;
+  }
+
+  /* space between a section's intro and its cards */
+  .lp-how-head,
+  .lp-feat-head,
+  .lp-why-head,
+  .lp-faq-head { margin-bottom: 40px; }
+
+  /* generous, even gaps between stacked cards */
+  .lp-how-grid,
+  .lp-how-grid--two,
+  .lp-feat-grid,
+  .lp-grid,
+  .lp-why-grid { gap: 18px; }
+  .lp-faq-list { gap: 16px; }
+
+  /* roomier card interiors */
+  .lp-how-grid--two .lp-how-card { padding: 32px 26px 28px; }
+  .lp-feat-card { padding: 30px 26px; }
+
+  /* hero: more air around the phone + copy */
+  .lp-hero { padding-top: 40px; padding-bottom: 96px; }
+  .lp-hero-inner { gap: 52px; }
+  .lp-hero-title {
+    font-size: clamp(36px, 10.5vw, 46px);
+    line-height: 1.06;
+  }
+  .lp-hero-lead { margin-bottom: 30px; }
+  .lp-hero-lead-strong { font-size: 23px; line-height: 1.3; font-weight: 800; }
+  .lp-hero-device { width: min(70vw, 264px); }
+
+  /* keep the status dot attached to the text instead of floating left of a
+     wrapped two-line row */
+  .lp-hero-trust { display: block; text-align: center; }
+  .lp-hero-trust-dot {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  /* let the in-card lead text breathe a bit more too */
+  .lp-how-line { line-height: 1.62; }
+}
