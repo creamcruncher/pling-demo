@@ -12,12 +12,18 @@
       (function () {
         var topLevel = window.self === window.top;
         var mobile = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-        if (topLevel && !mobile) document.documentElement.classList.add('pling-zoom');
+        if (topLevel && !mobile) {
+          document.documentElement.classList.add('pling-zoom');
+          var fz=function(){var z=Math.min(1.1,(window.innerHeight-24)/844,(window.innerWidth-24)/390);document.documentElement.style.setProperty('--pz',z);};
+          fz(); window.addEventListener('resize',fz); window.addEventListener('orientationchange',fz);
+        }
       })();
     </script>
     <style>
         /* 10% bigger everything (desktop standalone only — see head script) */
-        html.pling-zoom .phone { zoom: 1.1; }
+        html.pling-zoom .phone { zoom: var(--pz, 1.1); }
+        html.pling-zoom, html.pling-zoom body { overflow: hidden; }
+        html.pling-zoom body { padding: 12px 0; }
 
         /* Home-only: hero status card + slide control */
         .hero {
