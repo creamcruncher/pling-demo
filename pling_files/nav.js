@@ -137,7 +137,7 @@ window.PLING_THEME_ORDER = ['sunset', 'berry', 'lagoon', 'watermelon', 'citrus',
 
         var a = document.createElement('a');
         a.id = 'lpBackToSite';
-        a.href = 'index.html';
+        a.href = '../index.html';
         a.setAttribute('aria-label', 'Back to site');
         a.innerHTML =
             '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
